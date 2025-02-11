@@ -226,8 +226,8 @@ elif seccion == "Modelo XGBoost":
     st.markdown("### Carga del Modelo Preentrenado")
     model_path = "xgb_model.pkl.gz"
     try:
-        with open(model_path, "rb") as f:
-            model = pickle.load(f)
+        with gzip.open("xgb_model.pkl.gz", "rb") as f:
+    model = load(f)
         st.success("Modelo cargado correctamente.")
     except FileNotFoundError:
         st.error("No se encontró el archivo del modelo. Asegúrate de entrenarlo y guardarlo previamente.")

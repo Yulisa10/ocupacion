@@ -293,116 +293,83 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-elif seccion == "Modelo de redes neuronales":
-    st.subheader("🔬 Predicción de Ocupación usando Redes Neuronales")
-    
-    # Intentar cargar el modelo y el scaler
-    neural_net_model = None
-    scaler = None
-    
+
+def cargar_modelo():
     try:
         with gzip.open("best_model.pkl.gz", "rb") as f:
             data = pickle.load(f)
-            neural_net_model = data["model"]
-            scaler = data["scaler"]  # Recuperar el scaler
-        st.success("✅ Modelo y scaler cargados exitosamente.")
+        return data.get("model"), data.get("scaler")
     except Exception as e:
         st.error(f"⚠️ Error al cargar el modelo o el scaler: {e}")
-    
-    # Diccionario con valores mínimos y máximos de cada variable
-    min_max_dict = {
-        'Temperature': (19.0, 25.0),
-        'Humidity': (20.0, 60.0),
-        'Light': (0.0, 1500.0),
-        'CO2': (400.0, 1200.0),
-        'HumidityRatio': (0.003, 0.007)
-    }
-    
-    columnas_modelo = list(min_max_dict.keys())
-    
-    # Entrada de datos para predicción
-    st.markdown("### 📝 Introduce valores para la predicción")
-    inputs = {}
-    
-    for col in columnas_modelo:
-        min_val, max_val = min_max_dict[col]
-        inputs[col] = st.number_input(
-            f"{col} ({min_val} - {max_val})",
-            min_value=float(min_val),
-            max_value=float(max_val),
-            value=(min_val + max_val) / 2
-        )
-    
-    # Convertir entrada en DataFrame
-    input_df = pd.DataFrame([inputs])
-    
-    # Si el modelo y el scaler se cargaron correctamente, continuar con la predicción
-    if neural_net_model is not None and scaler is not None:
-        try:
-            input_scaled = scaler.transform(input_df)
-            if st.button("🤖 Predecir con Red Neuronal"):
-                prediccion = neural_net_model.predict(input_scaled)
-                ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
-                st.success(f"🟢 La predicción de ocupación es: **{ocupacion}**")
-        except Exception as e:
-            st.error(f"⚠️ Error al procesar la predicción: {e}")
-    else:
-        st.warning("⚠️ No se puede hacer la predicción sin un modelo y scaler válidos.")
-    
-    # ===========================
-    # Evaluación del Modelo
-    # ===========================
-    st.markdown("### 📊 Evaluación del Modelo de Red Neuronal")
-    
-    # Métricas de rendimiento
-    accuracy = 0.9934
-    f1_score = 0.9862
-    recall = 0.9918
-    precision = 0.9807
-    
-    metricas_df = pd.DataFrame({
-        "Métrica": ["Precisión (Accuracy)", "F1 Score", "Recall", "Precisión (Precision)"],
-        "Valor": [accuracy, f1_score, recall, precision]
-    })
-    
-    # Mostrar métricas en una tabla
-    st.table(metricas_df)
-    
-    # ===========================
-    # Gráfico de pérdida y precisión
-    # ===========================
-    st.markdown("### 🔍 Evolución del entrenamiento")
-    
+        return None, None
+
+def cargar_historial():
     try:
         with open("history.pkl", "rb") as f:
-            history = pickle.load(f)  # Cargar historial de entrenamiento guardado
-        
-        loss = history.get('loss', [])
-        val_loss = history.get('val_loss', [])
-        accuracy = history.get('accuracy', [])
-        val_accuracy = history.get('val_accuracy', [])
-        
-        fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-        
-        # Si hay datos de precisión, graficarlos
-        if accuracy and val_accuracy:
-            sns.lineplot(x=range(len(accuracy)), y=accuracy, marker='o', ax=axes[0], label='Entrenamiento')
-            sns.lineplot(x=range(len(val_accuracy)), y=val_accuracy, marker='o', ax=axes[0], label='Validación')
-            axes[0].set_title('Precisión')
-            axes[0].set_xlabel('Épocas')
-            axes[0].legend()
-        else:
-            axes[0].set_visible(False)
-        
-        # Graficar pérdida
-        sns.lineplot(x=range(len(loss)), y=loss, marker='o', ax=axes[1], label='Entrenamiento')
-        sns.lineplot(x=range(len(val_loss)), y=val_loss, marker='o', ax=axes[1], label='Validación')
-        axes[1].set_title('Pérdida')
-        axes[1].set_xlabel('Épocas')
-        axes[1].legend()
-        
-        st.pyplot(fig)
-        
+            history = pickle.load(f)
+        return history
     except Exception as e:
-        st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
+        st.warning("⚠️ No se encontró el historial de entrenamiento.")
+        return None
+
+# Cargar modelo y scaler
+neural_net_model, scaler = cargar_modelo()
+history = cargar_historial()
+
+# Mostrar información del modelo
+st.subheader("🔬 Análisis del Modelo de Redes Neuronales")
+
+if neural_net_model:
+    st.success("✅ Modelo cargado exitosamente.")
+    st.markdown("### 📌 Arquitectura del Modelo")
+    st.text(neural_net_model.summary())
+else:
+    st.error("❌ No se pudo cargar el modelo.")
+
+# Gráficos de entrenamiento
+if history:
+    st.markdown("### 📊 Evolución del Entrenamiento")
+    loss = history.get('loss', [])
+    val_loss = history.get('val_loss', [])
+    accuracy = history.get('accuracy', [])
+    val_accuracy = history.get('val_accuracy', [])
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    
+    # Precisión
+    if accuracy and val_accuracy:
+        sns.lineplot(x=range(len(accuracy)), y=accuracy, marker='o', ax=axes[0], label='Entrenamiento')
+        sns.lineplot(x=range(len(val_accuracy)), y=val_accuracy, marker='o', ax=axes[0], label='Validación')
+        axes[0].set_title('Precisión')
+        axes[0].set_xlabel('Épocas')
+        axes[0].legend()
+    
+    # Pérdida
+    sns.lineplot(x=range(len(loss)), y=loss, marker='o', ax=axes[1], label='Entrenamiento')
+    sns.lineplot(x=range(len(val_loss)), y=val_loss, marker='o', ax=axes[1], label='Validación')
+    axes[1].set_title('Pérdida')
+    axes[1].set_xlabel('Épocas')
+    axes[1].legend()
+    
+    st.pyplot(fig)
+
+# Simulación de predicción
+st.markdown("### 📝 Simulación de Predicción")
+
+if neural_net_model and scaler:
+    # Valores de entrada simulados
+    input_data = pd.DataFrame({
+        "Temperature": [22.5],
+        "Humidity": [50],
+        "Light": [800],
+        "CO2": [900],
+        "HumidityRatio": [0.005]
+    })
+    input_scaled = scaler.transform(input_data)
+    prediccion = neural_net_model.predict(input_scaled)
+    ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
+    st.success(f"🟢 Predicción simulada: **{ocupacion}**")
+else:
+    st.warning("⚠️ No se pudo hacer la predicción real. Generando un resultado simulado...")
+    st.success(f"🟢 Predicción simulada: **{'Ocupada' if np.random.rand() > 0.5 else 'No Ocupada'}**")
 

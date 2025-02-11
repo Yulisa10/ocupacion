@@ -295,64 +295,56 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-# --- Cargar modelo y scaler ---
-# Intenta cargar el modelo
-try:
-    model = tf.keras.models.load_model("best_model.h5")
-    print("Modelo cargado correctamente.")
-except Exception as e:
-    print(f"Error cargando el modelo: {e}")
+# Cargar modelo y scaler
+@st.cache_resource
+def load_assets():
+    model = load_model("best_model.h5")
+    with open("scaler.pkl", "rb") as f:
+        scaler = pickle.load(f)
+    return model, scaler
 
-# Intenta cargar el scaler
-try:
-    scaler = joblib.load("scaler.pkl")
-    print("Scaler cargado correctamente.")
-except Exception as e:
-    print(f"Error cargando el scaler: {e}")
+model, scaler = load_assets()
 
-# --- Interfaz de usuario ---
-st.title("Predicción de Ocupación de Espacios")
+# Título de la aplicación
+st.title("Predicción de Ocupación con Redes Neuronales")
 
-st.sidebar.header("Ingresar Datos")
-temperature = st.sidebar.slider("Temperatura (°C)", 19.0, 25.0, 22.0)
-humidity = st.sidebar.slider("Humedad (%)", 20.0, 60.0, 40.0)
-light = st.sidebar.slider("Luz (Lux)", 0.0, 1500.0, 750.0)
-co2 = st.sidebar.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
-humidity_ratio = st.sidebar.slider("Ratio de Humedad", 0.003, 0.007, 0.005)
+st.markdown("Ingrese los valores de las variables para hacer una predicción:")
 
-input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
-scaled_data = scaler.transform(input_data)
+# Entrada de usuario con sliders
+temperature = st.slider("Temperature (°C)", 19.0, 25.0, 22.0)
+humidity = st.slider("Humidity (%)", 20.0, 60.0, 40.0)
+light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
+co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
+humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
-# --- Predicción ---
-prediction = model.predict(scaled_data)
-pred_label = "Ocupado" if prediction[0, 1] > 0.5 else "Desocupado"
+# Botón de predicción
+if st.button("Predecir"):
+    # Crear array con los valores ingresados
+    input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
+    
+    # Escalar los valores de entrada
+    input_scaled = scaler.transform(input_data)
+    
+    # Hacer la predicción con el modelo
+    prediction = model.predict(input_scaled)
+    predicted_class = np.argmax(prediction)
+    
+    # Mostrar el resultado
+    st.subheader("Resultado de la Predicción:")
+    if predicted_class == 1:
+        st.success("✅ La sala está ocupada.")
+    else:
+        st.warning("❌ La sala está desocupada.")
 
-st.subheader("Resultado de la Predicción")
-st.write(f"El espacio está: **{pred_label}**")
+    # --- Mostrar hiperparámetros ---
+    st.subheader("Hiperparámetros del Modelo")
+    st.write({
+        "Capas Ocultas": 1,
+        "Neuronas en capa oculta": 176,
+        "Función de Activación": "ReLU",
+        "Optimizador": "RMSprop",
+        "Learning Rate": 0.065,
+        "Batch Size": 24,
+        "Epochs": 5
+    })
 
-# --- Mostrar hiperparámetros ---
-st.subheader("Hiperparámetros del Modelo")
-st.write({
-    "Capas Ocultas": 1,
-    "Neuronas en capa oculta": 176,
-    "Función de Activación": "ReLU",
-    "Optimizador": "RMSprop",
-    "Learning Rate": 0.065,
-    "Batch Size": 24,
-    "Epochs": 5
-})
-
-# --- Gráficos ---
-st.subheader("Distribución de Datos de Entrenamiento")
-
-train_data = pd.read_csv("datatrain.csv")  # Cargar dataset de entrenamiento
-
-fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-
-sns.histplot(train_data["Temperature"], bins=20, kde=True, ax=axes[0])
-axes[0].set_title("Distribución de Temperatura")
-
-sns.histplot(train_data["Humidity"], bins=20, kde=True, ax=axes[1])
-axes[1].set_title("Distribución de Humedad")
-
-st.pyplot(fig)

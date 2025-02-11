@@ -329,14 +329,8 @@ if st.button("Predecir"):
     # Escalar los valores de entrada
     input_scaled = scaler.transform(input_data)
 
-    # Mostrar los valores escalados para depuración
-    st.write("📊 **Valores escalados:**", input_scaled)
-
     # Hacer la predicción con el modelo
     prediction = model.predict(input_scaled)
-
-    # Mostrar la salida cruda del modelo
-    st.write("🔍 **Salida cruda del modelo:**", prediction)
 
     # Determinar la clase predicha
     if prediction.shape[1] == 1:  # Modelo con salida sigmoide
@@ -364,27 +358,26 @@ if st.button("Predecir"):
     else:
         st.warning(f"❌ La sala está desocupada. (Confianza: {confidence:.2f}%)")
 
-    # --- Explicación de la Predicción ---
-    st.subheader("🔍 Factores Claves en la Predicción")
-    st.markdown("""
-    - **Temperatura alta y alta humedad** pueden indicar mayor ocupación.
-    - **Niveles de CO2 elevados** suelen correlacionarse con más personas en la sala.
-    - **Más luz** generalmente significa actividad humana.
-    """)
-
-    # --- Mostrar historial de predicciones ---
+    # Mostrar historial de predicciones
     st.subheader("📜 Historial de Predicciones")
     history_df = pd.DataFrame(st.session_state.history)
-    st.dataframe(history_df)
 
-    # --- Gráfico interactivo ---
-    st.subheader("📊 Distribución de Datos Ingresados")
-    fig = px.bar(history_df, x="Prediction", y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
-                 title="Valores de Entrada en Predicciones Previas",
-                 barmode="group")
-    st.plotly_chart(fig)
+    if not history_df.empty:
+        st.dataframe(history_df)
 
-    # --- Mostrar hiperparámetros ---
+        # --- Gráfico interactivo ---
+        st.subheader("📊 Distribución de Datos Ingresados")
+        try:
+            fig = px.bar(history_df, x="Prediction", y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
+                         title="Valores de Entrada en Predicciones Previas",
+                         barmode="group")
+            st.plotly_chart(fig)
+        except Exception as e:
+            st.error(f"Error al generar el gráfico: {e}")
+    else:
+        st.warning("📌 Aún no hay predicciones registradas.")
+
+    # Mostrar hiperparámetros del modelo
     st.subheader("⚙️ Hiperparámetros del Modelo")
     st.write({
         "Capas Ocultas": 1,

@@ -223,57 +223,88 @@ elif seccion == "Modelo XGBoost":
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
     """)
 
-  # Cargar el modelo previamente entrenado
-st.markdown("### Carga del Modelo Preentrenado")
-model_path = "xgb_model.pkl.gz"
+ # Configuración de la aplicación
+st.title("Predicción de Ocupación con XGBoost")
+st.sidebar.title("Navegación")
+seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Exploración de Datos", "Predicciones"])
 
-try:
-    with gzip.open(model_path, "rb") as f:  # Usa la variable model_path
-        model = pickle.load(f)  # Indentación correcta aquí
-
-    st.success("Modelo cargado correctamente.")
-except FileNotFoundError:
-    st.error("No se encontró el archivo del modelo. Asegúrate de entrenarlo y guardarlo previamente.")
-    st.stop()
-except pickle.UnpicklingError:
-    st.error("Error al deserializar el modelo. Verifica que el archivo no esté corrupto.")
-    st.stop()
-except Exception as e:
-    st.error(f"Ocurrió un error inesperado: {e}")
-    st.stop()
-
-    # Mostrar hiperparámetros del modelo
-    st.markdown("### Hiperparámetros del Modelo XGBoost")
-    st.json(model.get_params())
-
-    # Importancia de las características
-    st.markdown("### Importancia de las Características")
-    feature_importances = model.feature_importances_
-    feature_names = ["Temperature", "Humidity", "Light", "CO2", "HumidityRatio"]
-    importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': feature_importances})
-    importance_df = importance_df.sort_values(by='Importance', ascending=False)
+# Cargar el modelo
+if seccion == "Carga del Modelo":
+    st.markdown("### Carga del Modelo Preentrenado")
+    model_path = "xgb_model.pkl.gz"
     
-    # Mostrar la importancia de las características en tabla
-    st.write("**Importancia de las características:**")
-    st.dataframe(importance_df)
+    try:
+        with gzip.open(model_path, "rb") as f:
+            model = pickle.load(f)
+        st.success("Modelo cargado correctamente.")
+    except FileNotFoundError:
+        st.error("No se encontró el archivo del modelo. Asegúrate de entrenarlo y guardarlo previamente.")
+        st.stop()
+    except pickle.UnpicklingError:
+        st.error("Error al deserializar el modelo. Verifica que el archivo no esté corrupto.")
+        st.stop()
+    except Exception as e:
+        st.error(f"Ocurrió un error inesperado: {e}")
+        st.stop()
 
-    # Gráfico de importancia
-    st.write("**Gráfico de importancia de características:**")
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis')
-    plt.title('Importancia de las Características en el Modelo XGBoost')
-    st.pyplot(plt)
+# Exploración de datos
+elif seccion == "Exploración de Datos":
+    st.markdown("### Exploración de Datos")
     
-    st.markdown("### Realizar Predicciones")
-    st.write("Introduce valores para realizar una predicción con el modelo cargado.")
-    temp = st.number_input("Temperatura", value=22.0)
-    humidity = st.number_input("Humedad", value=40.0)
-    light = st.number_input("Luz", value=300.0)
-    co2 = st.number_input("CO2", value=400.0)
-    humidity_ratio = st.number_input("Relación de Humedad", value=0.003)
+    # Cargar dataset de ejemplo
+    data_path = "datos_ocupacion.csv"  # Asegúrate de tener este archivo
+    try:
+        df = pd.read_csv(data_path)
+        st.write("Vista previa de los datos:")
+        st.dataframe(df.head())
 
-    if st.button("Predecir Ocupación"):
-        input_data = np.array([[temp, humidity, light, co2, humidity_ratio]])
-        prediction = model.predict(input_data)
-        resultado = "Ocupada" if prediction[0] == 1 else "No ocupada"
-        st.write(f"**Predicción:** La habitación está **{resultado}**.")
+        # Mostrar estadísticas descriptivas
+        st.write("Resumen estadístico de los datos:")
+        st.write(df.describe())
+
+        # Gráfico de distribución de la variable objetivo
+        st.write("Distribución de la variable objetivo")
+        plt.figure(figsize=(8, 5))
+        sns.histplot(df['ocupacion'], bins=20, kde=True)
+        st.pyplot(plt)
+
+        # Correlaciones
+        st.write("Matriz de correlación")
+        plt.figure(figsize=(10, 6))
+        sns.heatmap(df.corr(), annot=True, cmap='coolwarm', fmt='.2f')
+        st.pyplot(plt)
+    except FileNotFoundError:
+        st.error("No se encontró el archivo de datos. Asegúrate de subirlo correctamente.")
+        st.stop()
+
+# Predicciones
+elif seccion == "Predicciones":
+    st.markdown("### Predicciones del Modelo XGBoost")
+    
+    if 'model' not in locals():
+        st.error("El modelo no está cargado. Ve a la sección 'Carga del Modelo' primero.")
+    else:
+        st.write("Introduce valores para hacer una predicción:")
+        
+        # Crear entradas dinámicas según las variables del modelo
+        inputs = {}
+        for col in ['variable1', 'variable2', 'variable3']:  # Reemplaza con las columnas reales
+            inputs[col] = st.number_input(f"{col}", value=0.0)
+        
+        if st.button("Predecir"):
+            input_df = pd.DataFrame([inputs])
+            prediccion = model.predict(input_df)
+            st.success(f"La predicción de ocupación es: {prediccion[0]}")
+    
+    st.markdown("#### Importancia de las variables")
+    if 'model' in locals():
+        importancia = model.feature_importances_
+        variables = ['variable1', 'variable2', 'variable3']  # Reemplaza con las columnas reales
+        imp_df = pd.DataFrame({'Variable': variables, 'Importancia': importancia})
+        imp_df = imp_df.sort_values(by='Importancia', ascending=False)
+        
+        plt.figure(figsize=(8, 5))
+        sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
+        st.pyplot(plt)
+
+st.sidebar.info("Asegúrate de cargar el modelo antes de hacer predicciones")

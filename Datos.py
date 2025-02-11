@@ -220,6 +220,7 @@ elif seccion == "Modelo Random Forest":
     - **CO2**: Nivel de dióxido de carbono en la habitación.
     - **HumidityRatio**: Relación de humedad en la habitación.
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
+     """)
 
     # Función para cargar el modelo
     def load_model():
@@ -268,4 +269,3 @@ elif seccion == "Modelo Random Forest":
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
 st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
- """)

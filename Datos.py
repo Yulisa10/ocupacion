@@ -46,6 +46,7 @@ def load_data():
 # Preprocesamiento
 for df in [df_train, df_test]:
     df.drop(columns=["id", "date"], inplace=True, errors='ignore')
+    
     return 
 
 df_train, df_test = load_data()

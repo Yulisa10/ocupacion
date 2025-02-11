@@ -317,12 +317,15 @@ light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
 co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
 humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
-# --- Historial de predicciones ---
+# --- Inicializar historial de predicciones ---
 if "history" not in st.session_state:
     st.session_state.history = []
 
+# --- Sección de Redes Neuronales ---
+st.subheader("🤖 Predicción con Redes Neuronales")
+
 # --- Botón de predicción ---
-if st.button("Predecir"):
+if st.button("Predecir con Redes Neuronales"):
     # Crear array con los valores ingresados
     input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
     
@@ -336,7 +339,7 @@ if st.button("Predecir"):
     predicted_class = np.argmax(prediction)
     predicted_class = 1 - predicted_class  # Invertimos la lógica de la predicción
     
-    # Guardar en el historial
+    # Guardar en el historial solo para la sección de redes neuronales
     st.session_state.history.append({
         "Temperature": temperature,
         "Humidity": humidity,
@@ -356,18 +359,20 @@ if st.button("Predecir"):
     # Mostrar probabilidades de salida
     st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
 
-# --- Mostrar historial de predicciones ---
+# --- Mostrar historial de predicciones solo en redes neuronales ---
 if len(st.session_state.history) > 0:
     st.subheader("📌 Historial de Predicciones")
-    
-    # Convertimos la lista de diccionarios en un DataFrame
+
+    # Convertimos la lista de diccionarios en un DataFrame solo si hay datos
     history_df = pd.DataFrame(st.session_state.history)
 
     # Verificamos que hay datos antes de graficar
     if not history_df.empty:
-        fig = px.bar(history_df, x="Prediction", 
-                     y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
-                     barmode="group", title="Evolución de Predicciones")
+        fig = px.bar(
+            history_df, x="Prediction", 
+            y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
+            barmode="group", title="Evolución de Predicciones"
+        )
         st.plotly_chart(fig)
 
 # --- Mostrar hiperparámetros del modelo ---

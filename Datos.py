@@ -222,7 +222,7 @@ elif seccion == "Modelo Random Forest":
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
      """)
 
-    # Función para cargar el modelo
+ # Función para cargar el modelo
     def load_model():
         try:
             with gzip.open('random_forest_model.pkl.gz', 'rb') as f:

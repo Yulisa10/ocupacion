@@ -295,7 +295,7 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-if seccion == "Modelo de Redes Neuronales":
+if seccion == "Modelo de redes neuronales":
     # --- Cargar modelo y scaler ---
     @st.cache_resource
     def load_assets():

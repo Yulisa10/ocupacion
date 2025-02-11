@@ -211,17 +211,24 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     """)
     
 # Sección del modelo Random Forest
-elif seccion == "Modelo Random Forest":
+if seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")
     st.markdown("""
     En esta sección, exploraremos el modelo **Random Forest** para predecir la ocupación de habitaciones basándonos en las siguientes variables:
-    - **Temperature**: Temperatura en la habitación.
-    - **Humidity**: Humedad en la habitación.
-    - **Light**: Nivel de luz en la habitación.
-    - **CO2**: Nivel de dióxido de carbono en la habitación.
-    - **HumidityRatio**: Relación de humedad en la habitación.
+    - **Temperature**: Temperatura en la habitación (Min: 19.0, Max: 24.0).
+    - **Humidity**: Humedad en la habitación (Min: 20.0, Max: 60.0).
+    - **Light**: Nivel de luz en la habitación (Min: 0, Max: 1600).
+    - **CO2**: Nivel de dióxido de carbono en la habitación (Min: 400, Max: 2000).
+    - **HumidityRatio**: Relación de humedad en la habitación (Min: 0.002, Max: 0.006).
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
     """)
+
+    # Mostrar métricas de evaluación del modelo
+    st.markdown("### Métricas de Evaluación del Modelo")
+    st.write("- **Accuracy:** 0.9934")
+    st.write("- **F1 Score:** 0.9862")
+    st.write("- **Recall Score:** 0.9918")
+    st.write("- **Precision Score:** 0.9807")
 
     # Función para cargar el modelo
     def load_model():
@@ -242,25 +249,22 @@ elif seccion == "Modelo Random Forest":
         st.success("Modelo cargado correctamente.")
         model = st.session_state.model
 
-        # Mostrar los hiperparámetros del modelo
-        st.markdown("### Hiperparámetros del Modelo")
-        if hasattr(model, 'get_params'):
-            hyperparams = model.get_params()
-            st.json({key: hyperparams[key] for key in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf']})
-        else:
-            st.warning("No se pudieron extraer los hiperparámetros del modelo.")
-
         # Entrada de datos para predicción
         st.markdown("### Hacer una predicción")
         st.write("Introduce valores para hacer una predicción:")
         inputs = {}
-        columnas_modelo = ['Temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']
+        columnas_modelo = {
+            'Temperature': (19.0, 24.0),
+            'Humidity': (20.0, 60.0),
+            'Light': (0, 1600),
+            'CO2': (400, 2000),
+            'HumidityRatio': (0.002, 0.006)
+        }
 
-        for col in columnas_modelo:
-            inputs[col] = st.number_input(f"{col}", value=0.0)
-        
-        # Entrada del valor real de ocupación para comparar
-        real_value = st.radio("Valor real de ocupación (si se conoce)", [None, 0, 1], index=0)
+        for col, (min_val, max_val) in columnas_modelo.items():
+            inputs[col] = st.number_input(f"{col} ({min_val} - {max_val})", min_value=min_val, max_value=max_val, value=(min_val + max_val) / 2)
+
+        real_value = st.selectbox("Valor real de ocupación (Opcional):", [None, 0, 1])
         
         if st.button("Predecir"):
             input_df = pd.DataFrame([inputs])
@@ -269,26 +273,21 @@ elif seccion == "Modelo Random Forest":
             
             if real_value is not None:
                 if prediccion == real_value:
-                    st.success("✅ La predicción coincide con el valor real.")
+                    st.success("Predicción correcta!")
                 else:
-                    st.error("❌ La predicción NO coincide con el valor real.")
+                    st.error("Predicción incorrecta.")
 
         # Importancia de las variables
         st.markdown("### Importancia de las variables")
         importancia = model.feature_importances_
-        imp_df = pd.DataFrame({'Variable': columnas_modelo, 'Importancia': importancia})
+        imp_df = pd.DataFrame({'Variable': list(columnas_modelo.keys()), 'Importancia': importancia})
         imp_df = imp_df.sort_values(by='Importancia', ascending=False)
-        
-        # Gráfico de importancia de variables
+
         plt.figure(figsize=(8, 5))
         sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
         plt.xlabel("Importancia (%)")
-        plt.title("Importancia de cada variable en el modelo")
-        for index, value in enumerate(imp_df['Importancia']):
-            plt.text(value, index, f"{value:.2%}", va='center')
         st.pyplot(plt)
     else:
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
 st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
-

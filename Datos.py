@@ -295,51 +295,47 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-# Cargar modelo y scaler
+# --- Cargar modelo y scaler ---
 @st.cache_resource
 def load_assets():
-    model = load_model("best_model.h5")
+    model = tf.keras.models.load_model("best_model.h5")
     with open("scaler.pkl", "rb") as f:
         scaler = pickle.load(f)
     return model, scaler
 
 model, scaler = load_assets()
 
-# Historial de predicciones
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-# Título de la aplicación
-st.title("Predicción de Ocupación con Redes Neuronales")
+# --- Título de la aplicación ---
+st.title("🔍 Predicción de Ocupación con Redes Neuronales")
 
 st.markdown("Ingrese los valores de las variables para hacer una predicción:")
 
-# Entrada de usuario con sliders
+# --- Entrada de usuario con sliders ---
 temperature = st.slider("Temperature (°C)", 19.0, 25.0, 22.0)
 humidity = st.slider("Humidity (%)", 20.0, 60.0, 40.0)
 light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
 co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
 humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
-# Botón de predicción
+# --- Historial de predicciones ---
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# --- Botón de predicción ---
 if st.button("Predecir"):
     # Crear array con los valores ingresados
     input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
     
     # Escalar los valores de entrada
     input_scaled = scaler.transform(input_data)
-
+    
     # Hacer la predicción con el modelo
     prediction = model.predict(input_scaled)
-
-    # Determinar la clase predicha
-    if prediction.shape[1] == 1:  # Modelo con salida sigmoide
-        predicted_class = (prediction > 0.5).astype(int)[0][0]
-        confidence = prediction[0][0] * 100  # Convertir a porcentaje
-    else:  # Modelo con softmax
-        predicted_class = np.argmax(prediction)
-        confidence = prediction[0][predicted_class] * 100
-
+    
+    # 🔄 INVERSIÓN DE LA PREDICCIÓN 🔄
+    predicted_class = np.argmax(prediction)
+    predicted_class = 1 - predicted_class  # Invertimos la lógica de la predicción
+    
     # Guardar en el historial
     st.session_state.history.append({
         "Temperature": temperature,
@@ -347,44 +343,35 @@ if st.button("Predecir"):
         "Light": light,
         "CO2": co2,
         "Humidity Ratio": humidity_ratio,
-        "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada",
-        "Confidence": f"{confidence:.2f}%"
+        "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada"
     })
-
+    
     # Mostrar el resultado
-    st.subheader("Resultado de la Predicción:")
+    st.subheader("🧠 Resultado de la Predicción:")
     if predicted_class == 1:
-        st.success(f"✅ La sala está ocupada. (Confianza: {confidence:.2f}%)")
+        st.success("✅ La sala está ocupada.")
     else:
-        st.warning(f"❌ La sala está desocupada. (Confianza: {confidence:.2f}%)")
+        st.warning("❌ La sala está desocupada.")
 
-    # Mostrar historial de predicciones
-    st.subheader("📜 Historial de Predicciones")
-    history_df = pd.DataFrame(st.session_state.history)
+    # Mostrar probabilidades de salida
+    st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
 
-    if not history_df.empty:
-        st.dataframe(history_df)
+# --- Mostrar historial de predicciones ---
+if len(st.session_state.history) > 0:
+    st.subheader("📌 Historial de Predicciones")
+    history_df = st.session_state.history
+    fig = px.bar(history_df, x="Prediction", y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
+                 barmode="group", title="Evolución de Predicciones")
+    st.plotly_chart(fig)
 
-        # --- Gráfico interactivo ---
-        st.subheader("📊 Distribución de Datos Ingresados")
-        try:
-            fig = px.bar(history_df, x="Prediction", y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
-                         title="Valores de Entrada en Predicciones Previas",
-                         barmode="group")
-            st.plotly_chart(fig)
-        except Exception as e:
-            st.error(f"Error al generar el gráfico: {e}")
-    else:
-        st.warning("📌 Aún no hay predicciones registradas.")
-
-    # Mostrar hiperparámetros del modelo
-    st.subheader("⚙️ Hiperparámetros del Modelo")
-    st.write({
-        "Capas Ocultas": 1,
-        "Neuronas en capa oculta": 176,
-        "Función de Activación": "ReLU",
-        "Optimizador": "RMSprop",
-        "Learning Rate": 0.065,
-        "Batch Size": 24,
-        "Epochs": 5
-    })
+# --- Mostrar hiperparámetros del modelo ---
+st.subheader("⚙️ Hiperparámetros del Modelo")
+st.write({
+    "Capas Ocultas": 1,
+    "Neuronas en capa oculta": 176,
+    "Función de Activación": "ReLU",
+    "Optimizador": "RMSprop",
+    "Learning Rate": 0.065,
+    "Batch Size": 24,
+    "Epochs": 5
+})

@@ -209,9 +209,11 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     ### Conclusión Final:
     El **Random Forest Classifier** fue seleccionado como el mejor modelo debido a su alto rendimiento, capacidad para manejar el desequilibrio de clases, interpretabilidad de las características y robustez ante el overfitting. Estos factores lo convierten en la opción más adecuada para la tarea de predecir la ocupación de habitaciones, superando a otros modelos como XGBoost, Decision Tree, KNN y la red neuronal en este contexto específico.
     """)
-if seccion == "Random Forest":
-# Sección del modelo Random Forest
-elif seccion == "Modelo Random Forest":
+
+# ==============================
+# SECCIÓN: RANDOM FOREST
+# ==============================
+if seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")
     st.markdown("""
     En esta sección, exploraremos el modelo **Random Forest** para predecir la ocupación de habitaciones basándonos en las siguientes variables:
@@ -286,7 +288,7 @@ elif seccion == "Modelo Random Forest":
     else:
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
-st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
+    st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
 
 # ==============================
 # SECCIÓN: REDES NEURONALES
@@ -381,4 +383,5 @@ elif seccion == "Modelo de redes neuronales":
         st.error(f"⚠️ Error al cargar el modelo: {e}")
 
     st.sidebar.info("ℹ️ Esta sección usa un modelo de Red Neuronal para predecir la ocupación de habitaciones.")
+
 

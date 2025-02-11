@@ -178,6 +178,7 @@ elif seccion == "Boxplots":
 feature_names = df_train.drop(columns=["Occupancy"], errors='ignore').columns
 
 # Nueva sección: Conclusión sobre la selección del mejor modelo
+# Nueva sección: Conclusión sobre la selección del mejor modelo
 elif seccion == "Conclusión: Selección del Mejor Modelo":
     st.subheader("Conclusión: Selección del Mejor Modelo (XGBoost)")
     st.markdown("""
@@ -213,7 +214,6 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     """)
 
 # Nueva sección: Modelo XGBoost
-
 elif seccion == "Modelo XGBoost":
     st.subheader("Modelo XGBoost: Predicción de Ocupación")
     st.markdown("""

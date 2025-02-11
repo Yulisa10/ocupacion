@@ -338,7 +338,7 @@ elif seccion == "Modelo de redes neuronales":
         # Botón de predicción
         if st.button("🤖 Predecir con Red Neuronal"):
             prediccion = neural_net_model.predict(input_scaled)
-            ocupacion = "Ocupada" if prediccion[0] >= 0.5 else "No Ocupada"
+            ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
             st.success(f"🟢 La predicción de ocupación es: **{ocupacion}**")
 
         # ===========================

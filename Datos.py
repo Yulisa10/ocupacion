@@ -223,17 +223,24 @@ elif seccion == "Modelo XGBoost":
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
     """)
 
-    # Cargar el modelo previamente entrenado
-    st.markdown("### Carga del Modelo Preentrenado")
-    model_path = "xgb_model.pkl.gz"
-    try:
-        with gzip.open("/mount/src/ocupacion/xgb_model.pkl.gz", "rb") as f:  
-    model = pickle.load(f)
-    
-        st.success("Modelo cargado correctamente.")
-    except FileNotFoundError:
-        st.error("No se encontró el archivo del modelo. Asegúrate de entrenarlo y guardarlo previamente.")
-        st.stop()
+  # Cargar el modelo previamente entrenado
+st.markdown("### Carga del Modelo Preentrenado")
+model_path = "xgb_model.pkl.gz"
+
+try:
+    with gzip.open(model_path, "rb") as f:  # Usa la variable model_path
+        model = pickle.load(f)  # Indentación correcta aquí
+
+    st.success("Modelo cargado correctamente.")
+except FileNotFoundError:
+    st.error("No se encontró el archivo del modelo. Asegúrate de entrenarlo y guardarlo previamente.")
+    st.stop()
+except pickle.UnpicklingError:
+    st.error("Error al deserializar el modelo. Verifica que el archivo no esté corrupto.")
+    st.stop()
+except Exception as e:
+    st.error(f"Ocurrió un error inesperado: {e}")
+    st.stop()
 
     # Mostrar hiperparámetros del modelo
     st.markdown("### Hiperparámetros del Modelo XGBoost")

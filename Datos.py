@@ -249,7 +249,7 @@ if seccion == "Modelo Random Forest":
         st.success("Modelo cargado correctamente.")
         model = st.session_state.model
 
-        # Entrada de datos para predicción
+# Entrada de datos para predicción
 st.markdown("### Hacer una predicción")
 st.write("Introduce valores para hacer una predicción:")
 inputs = {}
@@ -290,8 +290,6 @@ if st.button("Predecir"):
     plt.figure(figsize=(8, 5))
     sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
     st.pyplot(plt)
-    
-    else:
-        st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
 st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
+

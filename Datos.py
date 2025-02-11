@@ -237,36 +237,41 @@ def load_model():
     except Exception as e:
         st.error(f"Error al cargar el modelo: {e}")
         return None
-        
-# Cargar el modelo
+
+# Cargar el modelo cuando se selecciona la sección correspondiente
 if seccion == "Carga del Modelo":
     st.markdown("### Carga del Modelo Preentrenado")
     model = load_model()
     if model is not None:
         st.success("Modelo cargado correctamente.")
-
-# Predicciones
+        st.session_state.model = model  # Guardar el modelo en el estado de sesión para usarlo en otra sección
+    else:
+        st.error("Hubo un problema al cargar el modelo.")
+        
+# Predicciones cuando se selecciona la sección correspondiente
 elif seccion == "Predicciones":
     st.markdown("### Predicciones del Modelo Random Forest")
     
-    if 'model' not in locals():
+    if 'model' not in st.session_state:
         st.error("El modelo no está cargado. Ve a la sección 'Carga del Modelo' primero.")
     else:
+        model = st.session_state.model  # Recuperar el modelo desde el estado de la sesión
         st.write("Introduce valores para hacer una predicción:")
         
         # Crear entradas dinámicas según las variables del modelo
         inputs = {}
-        # Reemplaza con las columnas reales que el modelo espera
         for col in ['Temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']:  # Ajusta según las características del modelo
             inputs[col] = st.number_input(f"{col}", value=0.0)
         
         if st.button("Predecir"):
+            # Crear DataFrame para hacer la predicción
             input_df = pd.DataFrame([inputs])
             prediccion = model.predict(input_df)
             st.success(f"La predicción de ocupación es: {prediccion[0]}")
     
     st.markdown("#### Importancia de las variables")
-    if 'model' in locals():
+    if 'model' in st.session_state:
+        model = st.session_state.model
         importancia = model.feature_importances_
         variables = ['Temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']  # Ajusta según las características del modelo
         imp_df = pd.DataFrame({'Variable': variables, 'Importancia': importancia})
@@ -276,6 +281,7 @@ elif seccion == "Predicciones":
         sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
         st.pyplot(plt)
 
+# Incluir en la barra lateral la advertencia para cargar el modelo
 st.sidebar.info("Asegúrate de cargar el modelo antes de hacer predicciones")
 
 

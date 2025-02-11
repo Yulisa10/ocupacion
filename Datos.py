@@ -319,22 +319,26 @@ if seccion == "Modelo de redes neuronales":
     humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
     # --- Botón de predicción ---
-    if st.button("Predecir"):
-        # Crear array con los valores ingresados
-        input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
-        
-        # Escalar los valores de entrada
-        input_scaled = scaler.transform(input_data)
-        
-        # Hacer la predicción con el modelo
-        prediction = model.predict(input_scaled)
-        predicted_class = np.argmax(prediction)
+if st.button("Predecir"):
+    # Crear array con los valores ingresados
+    input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
+    
+    # Escalar los valores de entrada
+    input_scaled = scaler.transform(input_data)
+    
+    # Hacer la predicción con el modelo
+    prediction = model.predict(input_scaled)
+    
+    # Obtener la clase predicha
+    predicted_class = np.argmax(prediction)
 
-        # Invertir la lógica si es necesario
-        if predicted_class == 0:
-            st.success("✅ La sala está ocupada.")
-        else:
-            st.warning("❌ La sala está desocupada.")
+    # Corregir la lógica según tu definición:
+    if predicted_class == 1:
+        st.success("✅ La sala está ocupada.")
+    else:
+        st.warning("❌ La sala está desocupada.")
+
+   
 
     # --- Mostrar hiperparámetros del modelo ---
     st.subheader("📌 Hiperparámetros del Modelo")

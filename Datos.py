@@ -359,10 +359,16 @@ if st.button("Predecir"):
 # --- Mostrar historial de predicciones ---
 if len(st.session_state.history) > 0:
     st.subheader("📌 Historial de Predicciones")
-    history_df = st.session_state.history
-    fig = px.bar(history_df, x="Prediction", y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
-                 barmode="group", title="Evolución de Predicciones")
-    st.plotly_chart(fig)
+    
+    # Convertimos la lista de diccionarios en un DataFrame
+    history_df = pd.DataFrame(st.session_state.history)
+
+    # Verificamos que hay datos antes de graficar
+    if not history_df.empty:
+        fig = px.bar(history_df, x="Prediction", 
+                     y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
+                     barmode="group", title="Evolución de Predicciones")
+        st.plotly_chart(fig)
 
 # --- Mostrar hiperparámetros del modelo ---
 st.subheader("⚙️ Hiperparámetros del Modelo")

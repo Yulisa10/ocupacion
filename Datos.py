@@ -249,33 +249,37 @@ if seccion == "Modelo Random Forest":
         st.success("Modelo cargado correctamente.")
         model = st.session_state.model
 
-        # Entrada de datos para predicción
-        st.markdown("### Hacer una predicción")
-        st.write("Introduce valores para hacer una predicción:")
-        inputs = {}
-        columnas_modelo = {
-            'Temperature': (19.0, 24.0),
-            'Humidity': (20.0, 60.0),
-            'Light': (0, 1600),
-            'CO2': (400, 2000),
-            'HumidityRatio': (0.002, 0.006)
-        }
+      # Entrada de datos para predicción
+st.markdown("### Hacer una predicción")
+st.write("Introduce valores para hacer una predicción:")
+inputs = {}
 
-        for col, (min_val, max_val) in columnas_modelo.items():
-            inputs[col] = st.number_input(f"{col} ({min_val} - {max_val})", min_value=min_val, max_value=max_val, value=(min_val + max_val) / 2)
+# Diccionario con valores mínimos y máximos de cada variable
+min_max_dict = {
+    'Temperature': (19.0, 25.0),
+    'Humidity': (20.0, 60.0),
+    'Light': (0.0, 1500.0),
+    'CO2': (400.0, 1200.0),
+    'HumidityRatio': (0.003, 0.007)
+}
 
-        real_value = st.selectbox("Valor real de ocupación (Opcional):", [None, 0, 1])
-        
-        if st.button("Predecir"):
-            input_df = pd.DataFrame([inputs])
-            prediccion = model.predict(input_df)[0]
-            st.success(f"La predicción de ocupación es: {prediccion}")
-            
-            if real_value is not None:
-                if prediccion == real_value:
-                    st.success("Predicción correcta!")
-                else:
-                    st.error("Predicción incorrecta.")
+columnas_modelo = list(min_max_dict.keys())
+
+for col in columnas_modelo:
+    min_val, max_val = min_max_dict[col]  # Obtén los valores mínimos y máximos de cada variable
+    min_val, max_val = float(min_val), float(max_val)  # Convertir a flotante para evitar errores en Streamlit
+    inputs[col] = st.number_input(
+        f"{col} ({min_val} - {max_val})", 
+        min_value=min_val, 
+        max_value=max_val, 
+        value=(min_val + max_val) / 2
+    )
+
+if st.button("Predecir"):
+    input_df = pd.DataFrame([inputs])
+    prediccion = model.predict(input_df)
+    ocupacion = "Ocupada" if prediccion[0] == 1 else "No Ocupada"
+    st.success(f"La predicción de ocupación es: {ocupacion}")
 
         # Importancia de las variables
         st.markdown("### Importancia de las variables")

@@ -324,11 +324,22 @@ if st.button("Predecir"):
     
     # Escalar los valores de entrada
     input_scaled = scaler.transform(input_data)
-    
+
+    # Mostrar los valores escalados para depuración
+    st.write("📊 **Valores escalados:**", input_scaled)
+
     # Hacer la predicción con el modelo
     prediction = model.predict(input_scaled)
-    predicted_class = np.argmax(prediction)
-    
+
+    # Mostrar la salida bruta del modelo
+    st.write("🔍 **Salida cruda del modelo:**", prediction)
+
+    # Determinar la clase predicha
+    if prediction.shape[1] == 1:  # Modelo con salida sigmoide
+        predicted_class = (prediction > 0.5).astype(int)[0][0]
+    else:  # Modelo con softmax
+        predicted_class = np.argmax(prediction)
+
     # Mostrar el resultado
     st.subheader("Resultado de la Predicción:")
     if predicted_class == 1:
@@ -347,4 +358,3 @@ if st.button("Predecir"):
         "Batch Size": 24,
         "Epochs": 5
     })
-

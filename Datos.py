@@ -42,12 +42,11 @@ def load_data():
     df_test = pd.read_csv("https://raw.githubusercontent.com/JuanPablo9999/Mineria_de_datos_streamlit/main/datatest.csv")
     df_train = pd.read_csv(datatrain.csv)
     df_test = pd.read_csv(datatest.csv)
+    return
 
 # Preprocesamiento
 for df in [df_train, df_test]:
     df.drop(columns=["id", "date"], inplace=True, errors='ignore')
-    
-    return 
 
 df_train, df_test = load_data()
 

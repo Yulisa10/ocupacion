@@ -335,6 +335,23 @@ elif seccion == "Modelo de redes neuronales":
         # Convertir entrada en DataFrame
         input_df = pd.DataFrame([inputs])
 
+        # Definir un scaler nuevo (esto solo es un parche si no puedes recuperar el original)
+scaler = StandardScaler()
+
+# Simular datos de entrenamiento con valores aproximados a los originales
+datos_falsos = pd.DataFrame({
+    "Temperature": [19, 22, 24, 25],
+    "Humidity": [30, 45, 55, 60],
+    "Light": [200, 600, 1000, 1500],
+    "CO2": [500, 800, 1000, 1200],
+    "HumidityRatio": [0.004, 0.005, 0.006, 0.007]
+})
+
+# Ajustar el scaler con datos simulados
+scaler.fit(datos_falsos)
+
+st.warning("⚠️ Se generó un nuevo scaler basado en valores aproximados. Puede afectar la precisión del modelo.")
+
         # Escalado de datos (IMPORTANTE: usar un scaler ajustado previamente)
         try:
             with open("scaler.pkl", "rb") as f:

@@ -51,7 +51,7 @@ for df in [df_train, df_test]:
 
 df_train, df_test = load_data()
 
-# Preprocesamiento por separado para train y test
+# Asegurar que la función recibe `df_train` y `df_test` como parámetros
 def preprocess_data(train_df, test_df):
     X_train = train_df.drop(columns=["Occupancy"], errors='ignore')
     y_train = train_df["Occupancy"]
@@ -59,16 +59,15 @@ def preprocess_data(train_df, test_df):
     X_test = test_df.drop(columns=["Occupancy"], errors='ignore')
     y_test = test_df["Occupancy"]
     
-    # Ajustar el escalador solo con los datos de entrenamiento y transformarlos
+    # Ajustar el escalador solo con los datos de entrenamiento
     scaler = MinMaxScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)  # Usamos el mismo scaler para mantener la coherencia
+    X_test_scaled = scaler.transform(X_test)  # Aplicar el mismo escalador a test
 
     return X_train_scaled, X_test_scaled, y_train, y_test, scaler
 
-# Llamar a la función con los nuevos datos
+# Asegurar que los datos se pasan correctamente
 X_train, X_test, y_train, y_test, scaler = preprocess_data(df_train, df_test)
-
 
 # Mostrar contenido basado en la selección
 if seccion == "Vista previa de los datos":

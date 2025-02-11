@@ -341,47 +341,66 @@ elif seccion == "Modelo de redes neuronales":
             ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
             st.success(f"🟢 La predicción de ocupación es: **{ocupacion}**")
 
-        # ===========================
-        # Evaluación del Modelo
-        # ===========================
-        st.markdown("### 📊 Evaluación del Modelo de Red Neuronal")
-        
-        # Métricas de rendimiento (debes calcularlas previamente en tu entrenamiento)
-        accuracy = 0.9934
-        f1_score = 0.9862
-        recall = 0.9918
-        precision = 0.9807
+       # ===========================
+# Evaluación del Modelo
+# ===========================
+st.markdown("### 📊 Evaluación del Modelo de Red Neuronal")
 
-        metricas_df = pd.DataFrame({
-            "Métrica": ["Precisión (Accuracy)", "F1 Score", "Recall", "Precisión (Precision)"],
-            "Valor": [accuracy, f1_score, recall, precision]
-        })
+# Métricas de rendimiento (debes calcularlas previamente en tu entrenamiento)
+accuracy = 0.9934
+f1_score = 0.9862
+recall = 0.9918
+precision = 0.9807
 
-        # Mostrar métricas en una tabla
-        st.table(metricas_df)
+metricas_df = pd.DataFrame({
+    "Métrica": ["Precisión (Accuracy)", "F1 Score", "Recall", "Precisión (Precision)"],
+    "Valor": [accuracy, f1_score, recall, precision]
+})
 
-        # ===========================
-        # Importancia de las variables
-        # ===========================
-        st.markdown("### 🔍 Importancia de las Características en la Predicción")
-        importancia_variables = np.random.rand(len(columnas_modelo))  # Simulación de importancia
-        
-        imp_df = pd.DataFrame({
-            "Variable": columnas_modelo,
-            "Importancia": importancia_variables
-        }).sort_values(by="Importancia", ascending=False)
+# Mostrar métricas en una tabla
+st.table(metricas_df)
 
-        # Gráfico de importancia de características
-        fig, ax = plt.subplots(figsize=(8, 5))
-        sns.barplot(x="Importancia", y="Variable", data=imp_df, palette="viridis", ax=ax)
-        ax.set_xlabel("Importancia Relativa")
-        ax.set_ylabel("Variable")
-        ax.set_title("Importancia de Variables en la Red Neuronal")
-        st.pyplot(fig)
+# ===========================
+# Gráfico de pérdida y precisión
+# ===========================
+st.markdown("### 🔍 Evolución del entrenamiento")
 
-    except Exception as e:
-        st.error(f"⚠️ Error al cargar el modelo: {e}")
+# Verificar si history está disponible en el modelo
+try:
+    history = neural_net_model.history_
 
-    st.sidebar.info("ℹ️ Esta sección usa un modelo de Red Neuronal para predecir la ocupación de habitaciones.")
+    # Obtener métricas
+    loss = history['loss']
+    val_loss = history['val_loss']
+
+    # Si 'accuracy' no está disponible, evitar el error
+    accuracy = history.get('accuracy', None)
+    val_accuracy = history.get('val_accuracy', None)
+
+    # Graficar
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+    # Si hay datos de precisión, graficarlos
+    if accuracy and val_accuracy:
+        sns.lineplot(x=range(len(accuracy)), y=accuracy, marker='o', ax=axes[0], label='Entrenamiento')
+        sns.lineplot(x=range(len(val_accuracy)), y=val_accuracy, marker='o', ax=axes[0], label='Validación')
+        axes[0].set_title('Precisión')
+        axes[0].set_xlabel('Épocas')
+        axes[0].legend()
+    else:
+        axes[0].set_visible(False)  # Ocultar gráfico vacío si no hay datos
+
+    # Graficar pérdida
+    sns.lineplot(x=range(len(loss)), y=loss, marker='o', ax=axes[1], label='Entrenamiento')
+    sns.lineplot(x=range(len(val_loss)), y=val_loss, marker='o', ax=axes[1], label='Validación')
+    axes[1].set_title('Pérdida')
+    axes[1].set_xlabel('Épocas')
+    axes[1].legend()
+
+    st.pyplot(fig)
+
+except Exception as e:
+    st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
+
 
 

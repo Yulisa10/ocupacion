@@ -296,19 +296,19 @@ if seccion == "Modelo Random Forest":
 # SECCIÓN: REDES NEURONALES
 # ==============================
 # --- Cargar modelo y scaler ---
-MODEL_PATH = "best_model.h5"
-SCALER_PATH = "scaler.pkl"
+# Intenta cargar el modelo
+try:
+    model = tf.keras.models.load_model("best_model.h5")
+    print("Modelo cargado correctamente.")
+except Exception as e:
+    print(f"Error cargando el modelo: {e}")
 
-@st.cache_resource
-def load_model():
-    return tf.keras.models.load_model(MODEL_PATH)
-
-@st.cache_resource
-def load_scaler():
-    return joblib.load(SCALER_PATH)
-
-model = load_model()
-scaler = load_scaler()
+# Intenta cargar el scaler
+try:
+    scaler = joblib.load("scaler.pkl")
+    print("Scaler cargado correctamente.")
+except Exception as e:
+    print(f"Error cargando el scaler: {e}")
 
 # --- Interfaz de usuario ---
 st.title("Predicción de Ocupación de Espacios")

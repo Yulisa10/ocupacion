@@ -396,8 +396,8 @@ elif seccion == "Modelo de redes neuronales":
             axes[1].set_xlabel('Épocas')
             axes[1].legend()
         
-            st.pyplot(fig)
-        
-        except Exception as e:
-            st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
+             st.pyplot(fig)
+
+except Exception as e:
+    st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
                     

@@ -318,10 +318,6 @@ if seccion == "Modelo de redes neuronales":
     co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
     humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
-    # --- Inicializar historial de predicciones ---
-    if "history" not in st.session_state:
-        st.session_state.history = []
-
     # --- Sección de Redes Neuronales ---
     st.subheader("🤖 Predicción con Redes Neuronales")
 
@@ -335,16 +331,6 @@ if seccion == "Modelo de redes neuronales":
         
         # Hacer la predicción con el modelo
         prediction = model.predict(input_scaled)
-        
-        # Guardar en el historial solo para la sección de redes neuronales
-        st.session_state.history.append({
-            "Temperature": temperature,
-            "Humidity": humidity,
-            "Light": light,
-            "CO2": co2,
-            "Humidity Ratio": humidity_ratio,
-            "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada"
-        })
         
         # Mostrar el resultado
         st.subheader("🧠 Resultado de la Predicción:")

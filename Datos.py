@@ -335,6 +335,12 @@ if seccion == "Modelo de redes neuronales":
         
         # Hacer la predicción con el modelo
         prediction = model.predict(input_scaled)
+
+        # Verificar si la predicción tiene la forma esperada
+        if prediction.ndim == 2 and prediction.shape[1] > 1:
+            predicted_class = np.argmax(prediction)  # Softmax
+        else:
+            predicted_class = int(round(prediction[0]))  # Salida escalar
         
         # Guardar en el historial solo para la sección de redes neuronales
         st.session_state.history.append({

@@ -211,7 +211,7 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     """)
     
 # Sección del modelo Random Forest
-if seccion == "Modelo Random Forest":
+elif seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")
     st.markdown("""
     En esta sección, exploraremos el modelo **Random Forest** para predecir la ocupación de habitaciones basándonos en las siguientes variables:

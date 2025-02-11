@@ -177,37 +177,37 @@ elif seccion == "Boxplots":
 
 # Nueva sección: Conclusión sobre la selección del mejor modelo
 elif seccion == "Conclusión: Selección del Mejor Modelo":
-    st.subheader("Conclusión: Selección del Mejor Modelo (XGBoost)")
+    st.subheader("Conclusión: Selección del Mejor Modelo (Random Forest)")
     st.markdown("""
-    Después de evaluar varios modelos de machine learning para la tarea de predecir la ocupación de habitaciones, se determinó que el **XGBoost Classifier** es el modelo más adecuado para este problema. A continuación, se detallan las razones por las que se seleccionó este modelo y por qué los otros no fueron la mejor opción:
+    Después de evaluar varios modelos de machine learning para la tarea de predecir la ocupación de habitaciones, se determinó que el **Random Forest Classifier** es el modelo más adecuado para este problema. A continuación, se detallan las razones por las que se seleccionó este modelo y por qué los otros no fueron la mejor opción:
 
-    #### Razones para elegir XGBoost:
+    #### Razones para elegir Random Forest:
     1. **Alto Rendimiento en Precisión y F1-Score**:
-       - XGBoost demostró un rendimiento superior en términos de precisión y F1-Score, lo que indica que es capaz de predecir correctamente tanto las habitaciones ocupadas como las desocupadas. Esto es especialmente importante en problemas de clasificación donde el equilibrio entre precisión y recall es crucial.
+       - Random Forest demostró un excelente rendimiento en términos de precisión y F1-Score, logrando un buen equilibrio entre la clasificación de habitaciones ocupadas y desocupadas.
 
     2. **Manejo de Desequilibrio de Clases**:
-       - En problemas donde las clases están desequilibradas (por ejemplo, más datos de habitaciones desocupadas que ocupadas), XGBoost es conocido por su capacidad para manejar este desequilibrio de manera efectiva, lo que lo hace más robusto y confiable.
+       - Random Forest maneja bien el desequilibrio de clases gracias a su estructura de ensamble de múltiples árboles de decisión, mejorando la generalización.
 
     3. **Interpretabilidad de las Características**:
-       - XGBoost proporciona una clara interpretación de la importancia de las características, lo que permite identificar qué variables (como el nivel de CO2, la luz o la humedad) son más relevantes para la predicción. Esto es invaluable para entender el problema y tomar decisiones basadas en datos.
+       - Random Forest proporciona una interpretación clara de la importancia de las características, permitiendo identificar variables clave como el nivel de CO2, la luz y la humedad en la predicción de ocupación.
 
-    4. **Eficiencia y Escalabilidad**:
-       - XGBoost es un modelo altamente eficiente y escalable, lo que lo hace adecuado para conjuntos de datos más grandes y complejos. Aunque en este caso el conjunto de datos no es extremadamente grande, su eficiencia asegura un entrenamiento rápido y un rendimiento óptimo.
+    4. **Robustez ante Overfitting**:
+       - Debido a su naturaleza basada en ensambles de múltiples árboles, Random Forest es menos propenso al sobreajuste en comparación con modelos individuales como Decision Tree.
 
-    5. **Robustez ante Overfitting**:
-       - Gracias a sus técnicas de regularización, XGBoost es menos propenso al sobreajuste (overfitting) en comparación con otros modelos, lo que garantiza que el modelo generalice bien a nuevos datos.
+    5. **Eficiencia y Escalabilidad**:
+       - Aunque puede ser computacionalmente más costoso que algunos modelos más simples, su rendimiento general lo hace una excelente opción para conjuntos de datos medianos y grandes.
 
     #### Razones por las que otros modelos no fueron seleccionados:
-    - **Random Forest**: Aunque es un modelo potente, tiende a ser más lento y menos eficiente en términos de memoria en comparación con XGBoost. Además, XGBoost suele superar a Random Forest en términos de precisión y F1-Score en muchos casos.
+    - **XGBoost**: Aunque XGBoost es un modelo muy potente, en este caso Random Forest logró un rendimiento similar con menor complejidad y menor necesidad de ajuste de hiperparámetros.
     
-    - **Decision Tree**: Es un modelo más simple y propenso al overfitting, especialmente en conjuntos de datos más complejos. No tiene la capacidad de regularización que tiene XGBoost, lo que lo hace menos confiable para generalizar.
-
-    - **K-Nearest Neighbors (KNN)**: Aunque es un modelo intuitivo, KNN es computacionalmente costoso y no maneja bien el desequilibrio de clases. Además, no proporciona una interpretación clara de la importancia de las características, lo que limita su utilidad en este contexto.
-
-    - **Red Neuronal**: Aunque las redes neuronales pueden ser muy poderosas, requieren una gran cantidad de datos y ajustes hiperparamétricos para alcanzar su máximo potencial. En este caso, el modelo secuencial utilizado es relativamente simple y no supera a XGBoost en términos de precisión o F1-Score.
+    - **Decision Tree**: Es propenso al overfitting y no generaliza tan bien como Random Forest, ya que se basa en un solo árbol en lugar de un ensamble.
+    
+    - **K-Nearest Neighbors (KNN)**: Requiere mucho cálculo a medida que aumenta el tamaño de los datos y no maneja bien el desequilibrio de clases.
+    
+    - **Red Neuronal**: Aunque las redes neuronales pueden ser muy poderosas, en este caso el modelo Random Forest alcanzó una mejor interpretabilidad y robustez sin necesidad de ajustes complejos.
 
     ### Conclusión Final:
-    El **XGBoost Classifier** fue seleccionado como el mejor modelo debido a su alto rendimiento, capacidad para manejar el desequilibrio de clases, interpretabilidad de las características, eficiencia y robustez ante el overfitting. Estos factores lo convierten en la opción más adecuada para la tarea de predecir la ocupación de habitaciones, superando a otros modelos como Random Forest, Decision Tree, KNN y la red neuronal en este contexto específico.
+    El **Random Forest Classifier** fue seleccionado como el mejor modelo debido a su alto rendimiento, capacidad para manejar el desequilibrio de clases, interpretabilidad de las características y robustez ante el overfitting. Estos factores lo convierten en la opción más adecuada para la tarea de predecir la ocupación de habitaciones, superando a otros modelos como XGBoost, Decision Tree, KNN y la red neuronal en este contexto específico.
     """)
     
 # Sección del modelo Random Forest

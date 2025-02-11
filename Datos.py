@@ -291,7 +291,7 @@ st.sidebar.info("Esta aplicación predice la ocupación de una habitación usand
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-elif seccion == "Redes Neuronales":
+elif seccion == "Modelo de redes neuronales":
     st.subheader("🔬 Predicción de Ocupación usando Redes Neuronales")
     
     # Cargar el modelo previamente entrenado

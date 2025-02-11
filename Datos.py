@@ -225,7 +225,7 @@ if seccion == "Modelo Random Forest":
     - **CO2**: Nivel de dióxido de carbono en la habitación.
     - **HumidityRatio**: Relación de humedad en la habitación.
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
-     """)
+    """)
 
     # Cargar el modelo
     def load_model():
@@ -263,11 +263,10 @@ if seccion == "Modelo Random Forest":
 
         for col in columnas_modelo:
             min_val, max_val = min_max_dict[col]
-            min_val, max_val = float(min_val), float(max_val)
             inputs[col] = st.number_input(
                 f"{col} ({min_val} - {max_val})", 
-                min_value=min_val, 
-                max_value=max_val, 
+                min_value=float(min_val), 
+                max_value=float(max_val), 
                 value=(min_val + max_val) / 2
             )
 
@@ -286,7 +285,6 @@ if seccion == "Modelo Random Forest":
             plt.figure(figsize=(8, 5))
             sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
             st.pyplot(plt)
-
     else:
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
@@ -355,34 +353,5 @@ if st.button("Predecir con Redes Neuronales"):
         st.success("✅ La sala está ocupada.")
     else:
         st.warning("❌ La sala está desocupada.")
-
-    # Mostrar probabilidades de salida
+    
     st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
-
-# --- Mostrar historial de predicciones solo en redes neuronales ---
-if len(st.session_state.history) > 0:
-    st.subheader("📌 Historial de Predicciones")
-
-    # Convertimos la lista de diccionarios en un DataFrame solo si hay datos
-    history_df = pd.DataFrame(st.session_state.history)
-
-    # Verificamos que hay datos antes de graficar
-    if not history_df.empty:
-        fig = px.bar(
-            history_df, x="Prediction", 
-            y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
-            barmode="group", title="Evolución de Predicciones"
-        )
-        st.plotly_chart(fig)
-
-# --- Mostrar hiperparámetros del modelo ---
-st.subheader("⚙️ Hiperparámetros del Modelo")
-st.write({
-    "Capas Ocultas": 1,
-    "Neuronas en capa oculta": 176,
-    "Función de Activación": "ReLU",
-    "Optimizador": "RMSprop",
-    "Learning Rate": 0.065,
-    "Batch Size": 24,
-    "Epochs": 5
-})

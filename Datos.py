@@ -301,7 +301,10 @@ scaler_path = "scaler.pkl"
 
 @st.cache_resource
 def load_model():
+    model_path = "/mnt/data/best_model.h5"
     return tf.keras.models.load_model(model_path)
+
+model = load_model()
 
 @st.cache_resource
 def load_scaler():

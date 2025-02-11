@@ -225,7 +225,7 @@ if seccion == "Modelo Random Forest":
     - **CO2**: Nivel de dióxido de carbono en la habitación.
     - **HumidityRatio**: Relación de humedad en la habitación.
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
-    """)
+     """)
 
     # Cargar el modelo
     def load_model():
@@ -263,10 +263,11 @@ if seccion == "Modelo Random Forest":
 
         for col in columnas_modelo:
             min_val, max_val = min_max_dict[col]
+            min_val, max_val = float(min_val), float(max_val)
             inputs[col] = st.number_input(
                 f"{col} ({min_val} - {max_val})", 
-                min_value=float(min_val), 
-                max_value=float(max_val), 
+                min_value=min_val, 
+                max_value=max_val, 
                 value=(min_val + max_val) / 2
             )
 
@@ -285,6 +286,7 @@ if seccion == "Modelo Random Forest":
             plt.figure(figsize=(8, 5))
             sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
             st.pyplot(plt)
+
     else:
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
@@ -292,66 +294,80 @@ if seccion == "Modelo Random Forest":
 
 # ==============================
 # SECCIÓN: REDES NEURONALES
-# =============================
-# --- Cargar modelo y scaler ---
-@st.cache_resource
-def load_assets():
-    model = tf.keras.models.load_model("best_model.h5")
-    with open("scaler.pkl", "rb") as f:
-        scaler = pickle.load(f)
-    return model, scaler
+# ==============================
+if seccion == "Modelo de Redes Neuronales":
+    # --- Cargar modelo y scaler ---
+    @st.cache_resource
+    def load_assets():
+        model = tf.keras.models.load_model("best_model.h5")
+        with open("scaler.pkl", "rb") as f:
+            scaler = pickle.load(f)
+        return model, scaler
 
-model, scaler = load_assets()
+    model, scaler = load_assets()
 
-# --- Título de la aplicación ---
-st.title("🔍 Predicción de Ocupación con Redes Neuronales")
+    # --- Título de la aplicación ---
+    st.title("🔍 Predicción de Ocupación con Redes Neuronales")
 
-st.markdown("Ingrese los valores de las variables para hacer una predicción:")
+    st.markdown("Ingrese los valores de las variables para hacer una predicción:")
 
-# --- Entrada de usuario con sliders ---
-temperature = st.slider("Temperature (°C)", 19.0, 25.0, 22.0)
-humidity = st.slider("Humidity (%)", 20.0, 60.0, 40.0)
-light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
-co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
-humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
+    # --- Entrada de usuario con sliders ---
+    temperature = st.slider("Temperature (°C)", 19.0, 25.0, 22.0)
+    humidity = st.slider("Humidity (%)", 20.0, 60.0, 40.0)
+    light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
+    co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
+    humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
-# --- Inicializar historial de predicciones ---
-if "history" not in st.session_state:
-    st.session_state.history = []
+    # --- Inicializar historial de predicciones ---
+    if "history" not in st.session_state:
+        st.session_state.history = []
 
-# --- Sección de Redes Neuronales ---
-st.subheader("🤖 Predicción con Redes Neuronales")
+    # --- Sección de Redes Neuronales ---
+    st.subheader("🤖 Predicción con Redes Neuronales")
 
-# --- Botón de predicción ---
-if st.button("Predecir con Redes Neuronales"):
-    # Crear array con los valores ingresados
-    input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
-    
-    # Escalar los valores de entrada
-    input_scaled = scaler.transform(input_data)
-    
-    # Hacer la predicción con el modelo
-    prediction = model.predict(input_scaled)
-    
-    # 🔄 INVERSIÓN DE LA PREDICCIÓN 🔄
-    predicted_class = np.argmax(prediction)
-    predicted_class = 1 - predicted_class  # Invertimos la lógica de la predicción
-    
-    # Guardar en el historial solo para la sección de redes neuronales
-    st.session_state.history.append({
-        "Temperature": temperature,
-        "Humidity": humidity,
-        "Light": light,
-        "CO2": co2,
-        "Humidity Ratio": humidity_ratio,
-        "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada"
-    })
-    
-    # Mostrar el resultado
-    st.subheader("🧠 Resultado de la Predicción:")
-    if predicted_class == 1:
-        st.success("✅ La sala está ocupada.")
-    else:
-        st.warning("❌ La sala está desocupada.")
-    
-    st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
+    # --- Botón de predicción ---
+    if st.button("Predecir con Redes Neuronales"):
+        # Crear array con los valores ingresados
+        input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
+        
+        # Escalar los valores de entrada
+        input_scaled = scaler.transform(input_data)
+        
+        # Hacer la predicción con el modelo
+        prediction = model.predict(input_scaled)
+        
+        # 🔄 INVERSIÓN DE LA PREDICCIÓN 🔄
+        predicted_class = np.argmax(prediction)
+        predicted_class = 1 - predicted_class  # Invertimos la lógica de la predicción
+        
+        # Guardar en el historial solo para la sección de redes neuronales
+        st.session_state.history.append({
+            "Temperature": temperature,
+            "Humidity": humidity,
+            "Light": light,
+            "CO2": co2,
+            "Humidity Ratio": humidity_ratio,
+            "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada"
+        })
+        
+        # Mostrar el resultado
+        st.subheader("🧠 Resultado de la Predicción:")
+        if predicted_class == 1:
+            st.success("✅ La sala está ocupada.")
+        else:
+            st.warning("❌ La sala está desocupada.")
+
+        # Mostrar probabilidades de salida
+        st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
+
+    # --- Mostrar historial de predicciones solo en redes neuronales ---
+    if len(st.session_state.history) > 0:
+        st.subheader("📌 Historial de Predicciones")
+        history_df = pd.DataFrame(st.session_state.history)
+        if not history_df.empty:
+            fig = px.bar(
+                history_df, x="Prediction", 
+                y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
+                barmode="group", title="Evolución de Predicciones"
+            )
+            st.plotly_chart(fig)

@@ -294,40 +294,46 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-# Cargar el modelo
-MODEL_PATH = "/mnt/data/best_model.h5"
-SCALER_PATH = "/mnt/data/scaler.pkl"  # Asegúrate de subir el scaler si se necesita
+# Cargar modelo y scaler
+@st.cache_resource
+def load_assets():
+    model = load_model("best_model.h5")
+    with open("scaler.pkl", "rb") as f:
+        scaler = pickle.load(f)
+    return model, scaler
 
-try:
-    model = load_model(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
-    st.success("✅ Modelo y scaler cargados exitosamente.")
-except Exception as e:
-    st.error(f"⚠️ Error al cargar el modelo o el scaler: {e}")
-    st.stop()
+model, scaler = load_assets()
 
-# Configurar la interfaz de Streamlit
+# Título de la aplicación
 st.title("Predicción de Ocupación con Redes Neuronales")
-st.write("Ingrese las características para realizar una predicción.")
 
-# Definir entradas del usuario
-feature_1 = st.number_input("Temperatura", value=20.0)
-feature_2 = st.number_input("Humedad", value=50.0)
-feature_3 = st.number_input("CO2", value=400.0)
-feature_4 = st.number_input("Humedad Relativa", value=30.0)
-feature_5 = st.number_input("Iluminación", value=300.0)
+st.markdown("Ingrese los valores de las variables para hacer una predicción:")
+
+# Entrada de usuario con sliders
+temperature = st.slider("Temperature (°C)", 19.0, 25.0, 22.0)
+humidity = st.slider("Humidity (%)", 20.0, 60.0, 40.0)
+light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
+co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
+humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
 # Botón de predicción
 if st.button("Predecir"):
-    try:
-        input_data = np.array([[feature_1, feature_2, feature_3, feature_4, feature_5]])
-        input_data_scaled = scaler.transform(input_data)  # Escalar los datos
-        prediction = model.predict(input_data_scaled)
-        predicted_class = np.argmax(prediction, axis=1)[0]  # 0: No Ocupado, 1: Ocupado
-        resultado = "Ocupado" if predicted_class == 1 else "No Ocupado"
-        st.success(f"🚀 Predicción: {resultado}")
-    except Exception as e:
-        st.error(f"⚠️ Error al hacer la predicción: {e}")
+    # Crear array con los valores ingresados
+    input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
+    
+    # Escalar los valores de entrada
+    input_scaled = scaler.transform(input_data)
+    
+    # Hacer la predicción con el modelo
+    prediction = model.predict(input_scaled)
+    predicted_class = np.argmax(prediction)
+    
+    # Mostrar el resultado
+    st.subheader("Resultado de la Predicción:")
+    if predicted_class == 1:
+        st.success("✅ La sala está ocupada.")
+    else:
+        st.warning("❌ La sala está desocupada.")
 
     
 

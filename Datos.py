@@ -210,10 +210,6 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     El **XGBoost Classifier** fue seleccionado como el mejor modelo debido a su alto rendimiento, capacidad para manejar el desequilibrio de clases, interpretabilidad de las características, eficiencia y robustez ante el overfitting. Estos factores lo convierten en la opción más adecuada para la tarea de predecir la ocupación de habitaciones, superando a otros modelos como Random Forest, Decision Tree, KNN y la red neuronal en este contexto específico.
     """)
     
-seccion = st.sidebar.radio("Selecciona una sección", ["Inicio", "Modelo Random Forest", "Otra Sección"])
-if seccion == "Inicio":
-    st.write("Bienvenido a la aplicación de predicción.")
-    
 elif seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")
     st.markdown("""
@@ -224,7 +220,6 @@ elif seccion == "Modelo Random Forest":
     - **CO2**: Nivel de dióxido de carbono en la habitación.
     - **HumidityRatio**: Relación de humedad en la habitación.
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
-    """)
 
     # Función para cargar el modelo
     def load_model():
@@ -273,3 +268,4 @@ elif seccion == "Modelo Random Forest":
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
 st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
+ """)

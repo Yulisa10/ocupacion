@@ -318,6 +318,13 @@ if seccion == "Modelo de redes neuronales":
     co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
     humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
+    # --- Inicializar historial de predicciones ---
+    if "history" not in st.session_state:
+        st.session_state.history = []
+
+    # --- Sección de Redes Neuronales ---
+    st.subheader("🤖 Predicción con Redes Neuronales")
+
     # --- Botón de predicción ---
     if st.button("Predecir con Redes Neuronales"):
         # Crear array con los valores ingresados
@@ -329,6 +336,16 @@ if seccion == "Modelo de redes neuronales":
         # Hacer la predicción con el modelo
         prediction = model.predict(input_scaled)
         
+        # Guardar en el historial solo para la sección de redes neuronales
+        st.session_state.history.append({
+            "Temperature": temperature,
+            "Humidity": humidity,
+            "Light": light,
+            "CO2": co2,
+            "Humidity Ratio": humidity_ratio,
+            "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada"
+        })
+        
         # Mostrar el resultado
         st.subheader("🧠 Resultado de la Predicción:")
         if predicted_class == 1:
@@ -339,15 +356,17 @@ if seccion == "Modelo de redes neuronales":
         # Mostrar probabilidades de salida
         st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
 
-    # --- Mostrar historial de predicciones solo en redes neuronales ---
-    if len(st.session_state.history) > 0:
-        st.subheader("📌 Historial de Predicciones")
-        history_df = pd.DataFrame(st.session_state.history)
-        if not history_df.empty:
-            fig = px.bar(
-                history_df, x="Prediction", 
-                y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
-                barmode="group", title="Evolución de Predicciones"
-            )
-            st.plotly_chart(fig)
+# --- Mostrar hiperparámetros del modelo ---
+    st.subheader("📌 Hiperparámetros del Modelo")
+    st.write({
+        "Capas Ocultas": 1,
+        "Neuronas en capa oculta": 176,
+        "Función de Activación": "ReLU",
+        "Optimizador": "RMSprop",
+        "Learning Rate": 0.065,
+        "Batch Size": 24,
+        "Epochs": 5
+    })
+
+
 

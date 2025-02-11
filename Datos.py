@@ -401,7 +401,3 @@ elif seccion == "Modelo de redes neuronales":
         except Exception as e:
             st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
                     
-        
-        
-        
-            

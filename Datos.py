@@ -227,10 +227,6 @@ elif seccion == "Modelo XGBoost":
 st.title("Predicción de Ocupación con Random Forest")
 st.sidebar.title("Navegación")
 seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Exploración de Datos", "Predicciones"])
-
-# Cargar el modelo
-if seccion == "Carga del Modelo":
-    st.markdown("### Carga del Modelo Preentrenado")
     
 # Función para cargar el modelo
 def load_model():

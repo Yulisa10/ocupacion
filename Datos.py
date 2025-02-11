@@ -305,6 +305,10 @@ def load_assets():
 
 model, scaler = load_assets()
 
+# Historial de predicciones
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 # Título de la aplicación
 st.title("Predicción de Ocupación con Redes Neuronales")
 
@@ -331,24 +335,57 @@ if st.button("Predecir"):
     # Hacer la predicción con el modelo
     prediction = model.predict(input_scaled)
 
-    # Mostrar la salida bruta del modelo
+    # Mostrar la salida cruda del modelo
     st.write("🔍 **Salida cruda del modelo:**", prediction)
 
     # Determinar la clase predicha
     if prediction.shape[1] == 1:  # Modelo con salida sigmoide
         predicted_class = (prediction > 0.5).astype(int)[0][0]
+        confidence = prediction[0][0] * 100  # Convertir a porcentaje
     else:  # Modelo con softmax
         predicted_class = np.argmax(prediction)
+        confidence = prediction[0][predicted_class] * 100
+
+    # Guardar en el historial
+    st.session_state.history.append({
+        "Temperature": temperature,
+        "Humidity": humidity,
+        "Light": light,
+        "CO2": co2,
+        "Humidity Ratio": humidity_ratio,
+        "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada",
+        "Confidence": f"{confidence:.2f}%"
+    })
 
     # Mostrar el resultado
     st.subheader("Resultado de la Predicción:")
     if predicted_class == 1:
-        st.success("✅ ocupada.")
+        st.success(f"✅ La sala está ocupada. (Confianza: {confidence:.2f}%)")
     else:
-        st.warning("❌ desocupada.")
+        st.warning(f"❌ La sala está desocupada. (Confianza: {confidence:.2f}%)")
+
+    # --- Explicación de la Predicción ---
+    st.subheader("🔍 Factores Claves en la Predicción")
+    st.markdown("""
+    - **Temperatura alta y alta humedad** pueden indicar mayor ocupación.
+    - **Niveles de CO2 elevados** suelen correlacionarse con más personas en la sala.
+    - **Más luz** generalmente significa actividad humana.
+    """)
+
+    # --- Mostrar historial de predicciones ---
+    st.subheader("📜 Historial de Predicciones")
+    history_df = pd.DataFrame(st.session_state.history)
+    st.dataframe(history_df)
+
+    # --- Gráfico interactivo ---
+    st.subheader("📊 Distribución de Datos Ingresados")
+    fig = px.bar(history_df, x="Prediction", y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
+                 title="Valores de Entrada en Predicciones Previas",
+                 barmode="group")
+    st.plotly_chart(fig)
 
     # --- Mostrar hiperparámetros ---
-    st.subheader("Hiperparámetros del Modelo")
+    st.subheader("⚙️ Hiperparámetros del Modelo")
     st.write({
         "Capas Ocultas": 1,
         "Neuronas en capa oculta": 176,

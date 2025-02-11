@@ -297,7 +297,7 @@ elif seccion == "Modelo de redes neuronales":
     st.subheader("🔬 Predicción de Ocupación usando Redes Neuronales")
     
     # Cargar modelo  previamente entrenado y scaler
-      try:
+    try:
     with gzip.open("best_model.pkl.gz", "rb") as f:
         data = pickle.load(f)
         neural_net_model = data["model"]

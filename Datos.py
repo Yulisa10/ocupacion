@@ -224,7 +224,7 @@ elif seccion == "Modelo XGBoost":
 
     # Cargar el modelo previamente entrenado
     st.markdown("### Carga del Modelo Preentrenado")
-    model_path = "modelo_xgboost.pkl"
+    model_path = "xgb_model.pkl.gz"
     try:
         with open(model_path, "rb") as f:
             model = pickle.load(f)

@@ -34,7 +34,7 @@ seccion = st.sidebar.radio("Tabla de Contenidos",
                             "Distribución de la variable objetivo", 
                             "Boxplots", 
                             "Conclusión: Selección del Mejor Modelo",  # Nueva ubicación
-                            "Modelo XGBoost",  # Nueva sección
+                            "Modelo random_fores",  # Nueva sección
                             "Modelo de redes neuronales"])
 # Cargar datos
 @st.cache_data
@@ -226,7 +226,7 @@ elif seccion == "Modelo Random Forest":
 # Configuración de la aplicación
 st.title("Predicción de Ocupación con Random Forest")
 st.sidebar.title("Navegación")
-seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Exploración de Datos", "Predicciones", "Modelo Random Forest"])
+seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo Random Forest", "Predicciones"])
 
 # Función para cargar el modelo
 def load_model():

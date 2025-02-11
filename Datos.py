@@ -227,11 +227,11 @@ elif seccion == "Modelo Random Forest":
 st.title("Predicción de Ocupación con Random Forest")
 st.sidebar.title("Navegación")
 seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Exploración de Datos", "Predicciones", "Modelo Random Forest"])
-    
+
 # Función para cargar el modelo
 def load_model():
     try:
-        with open('random_forest_model.pkl', 'rb') as f:
+        with gzip.open('random_forest_model.pkl.gz', 'rb') as f:
             model = pickle.load(f)
         return model
     except Exception as e:

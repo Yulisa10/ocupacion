@@ -174,10 +174,6 @@ elif seccion == "Boxplots":
     La ocupación tiene un impacto claro en **CO2, Light (luz) y Temperature (temperatura)**, aumentando sus valores en comparación con la falta de ocupación. En particular, la luz tiende a ser más alta y variable cuando hay ocupación. Otras variables como la humedad presentan cambios menores, pero no son significativos.
     """)
 
-# Guardar los nombres de las columnas antes de escalar
-feature_names = df_train.drop(columns=["Occupancy"], errors='ignore').columns
-
-# Nueva sección: Conclusión sobre la selección del mejor modelo
 # Nueva sección: Conclusión sobre la selección del mejor modelo
 elif seccion == "Conclusión: Selección del Mejor Modelo":
     st.subheader("Conclusión: Selección del Mejor Modelo (XGBoost)")

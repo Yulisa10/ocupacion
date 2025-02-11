@@ -273,5 +273,3 @@ elif seccion == "Modelo Random Forest":
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
 st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
-
-""")

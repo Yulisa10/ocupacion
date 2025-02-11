@@ -35,39 +35,33 @@ seccion = st.sidebar.radio("Tabla de Contenidos",
                             "Conclusión: Selección del Mejor Modelo",  # Nueva ubicación
                             "Modelo XGBoost",  # Nueva sección
                             "Modelo de redes neuronales"])
-
+# Cargar datos
 @st.cache_data
 def load_data():
     df_train = pd.read_csv("https://raw.githubusercontent.com/JuanPablo9999/Mineria_de_datos_streamlit/main/datatrain.csv")
     df_test = pd.read_csv("https://raw.githubusercontent.com/JuanPablo9999/Mineria_de_datos_streamlit/main/datatest.csv")
     return df_train, df_test
 
-# Cargar los datos y asegurarse de que están disponibles antes de usarlos
 df_train, df_test = load_data()
 
-# Preprocesamiento
+# Preprocesamiento de datos
 for df in [df_train, df_test]:
     df.drop(columns=["id", "date"], inplace=True, errors='ignore')
 
-df_train, df_test = load_data()
-
-# Asegurar que la función recibe `df_train` y `df_test` como parámetros
 def preprocess_data(train_df, test_df):
     X_train = train_df.drop(columns=["Occupancy"], errors='ignore')
     y_train = train_df["Occupancy"]
-    
     X_test = test_df.drop(columns=["Occupancy"], errors='ignore')
     y_test = test_df["Occupancy"]
     
-    # Ajustar el escalador solo con los datos de entrenamiento
     scaler = MinMaxScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)  # Aplicar el mismo escalador a test
-
+    X_test_scaled = scaler.transform(X_test)
+    
     return X_train_scaled, X_test_scaled, y_train, y_test, scaler
 
-# Asegurar que los datos se pasan correctamente
 X_train, X_test, y_train, y_test, scaler = preprocess_data(df_train, df_test)
+
 
 # Mostrar contenido basado en la selección
 if seccion == "Vista previa de los datos":

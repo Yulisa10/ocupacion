@@ -210,6 +210,7 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     El **XGBoost Classifier** fue seleccionado como el mejor modelo debido a su alto rendimiento, capacidad para manejar el desequilibrio de clases, interpretabilidad de las características, eficiencia y robustez ante el overfitting. Estos factores lo convierten en la opción más adecuada para la tarea de predecir la ocupación de habitaciones, superando a otros modelos como Random Forest, Decision Tree, KNN y la red neuronal en este contexto específico.
     """)
     
+# Sección del modelo Random Forest
 elif seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")
     st.markdown("""
@@ -220,9 +221,9 @@ elif seccion == "Modelo Random Forest":
     - **CO2**: Nivel de dióxido de carbono en la habitación.
     - **HumidityRatio**: Relación de humedad en la habitación.
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
-     """)
+    """)
 
- # Función para cargar el modelo
+    # Función para cargar el modelo
     def load_model():
         try:
             with gzip.open('random_forest_model.pkl.gz', 'rb') as f:
@@ -241,6 +242,14 @@ elif seccion == "Modelo Random Forest":
         st.success("Modelo cargado correctamente.")
         model = st.session_state.model
 
+        # Mostrar los hiperparámetros del modelo
+        st.markdown("### Hiperparámetros del Modelo")
+        if hasattr(model, 'get_params'):
+            hyperparams = model.get_params()
+            st.json({key: hyperparams[key] for key in ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf']})
+        else:
+            st.warning("No se pudieron extraer los hiperparámetros del modelo.")
+
         # Entrada de datos para predicción
         st.markdown("### Hacer una predicción")
         st.write("Introduce valores para hacer una predicción:")
@@ -249,23 +258,37 @@ elif seccion == "Modelo Random Forest":
 
         for col in columnas_modelo:
             inputs[col] = st.number_input(f"{col}", value=0.0)
-
+        
+        # Entrada del valor real de ocupación para comparar
+        real_value = st.radio("Valor real de ocupación (si se conoce)", [None, 0, 1], index=0)
+        
         if st.button("Predecir"):
             input_df = pd.DataFrame([inputs])
-            prediccion = model.predict(input_df)
-            st.success(f"La predicción de ocupación es: {prediccion[0]}")
+            prediccion = model.predict(input_df)[0]
+            st.success(f"La predicción de ocupación es: {prediccion}")
+            
+            if real_value is not None:
+                if prediccion == real_value:
+                    st.success("✅ La predicción coincide con el valor real.")
+                else:
+                    st.error("❌ La predicción NO coincide con el valor real.")
 
         # Importancia de las variables
         st.markdown("### Importancia de las variables")
         importancia = model.feature_importances_
         imp_df = pd.DataFrame({'Variable': columnas_modelo, 'Importancia': importancia})
         imp_df = imp_df.sort_values(by='Importancia', ascending=False)
-
+        
+        # Gráfico de importancia de variables
         plt.figure(figsize=(8, 5))
         sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
+        plt.xlabel("Importancia (%)")
+        plt.title("Importancia de cada variable en el modelo")
+        for index, value in enumerate(imp_df['Importancia']):
+            plt.text(value, index, f"{value:.2%}", va='center')
         st.pyplot(plt)
-
     else:
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
 st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
+

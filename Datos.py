@@ -295,99 +295,64 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-# Cargar el modelo y el scaler
-model_path = "best_model.h5"
-scaler_path = "scaler.pkl"
+# --- Cargar modelo y scaler ---
+MODEL_PATH = "best_model.h5"
+SCALER_PATH = "scaler.pkl"
 
 @st.cache_resource
 def load_model():
-    model_path = "/mnt/data/best_model.h5"
-    return tf.keras.models.load_model(model_path)
-
-model = load_model()
+    return tf.keras.models.load_model(MODEL_PATH)
 
 @st.cache_resource
 def load_scaler():
-    return joblib.load(scaler_path)
+    return joblib.load(SCALER_PATH)
 
 model = load_model()
 scaler = load_scaler()
 
-# Definir hiperparámetros utilizados en el modelo
-hyperparams = {
-    'depth': 1,
-    'epochs': 5,
-    'num_units': 176,
-    'optimizer': 'rmsprop',
-    'activation': 'relu',
-    'batch_size': 24,
-    'learning_rate': 0.065
-}
+# --- Interfaz de usuario ---
+st.title("Predicción de Ocupación de Espacios")
 
-# Interfaz de Streamlit
-st.title("📊 Análisis de Redes Neuronales")
-st.write("Este módulo presenta el análisis del modelo de redes neuronales entrenado para predecir la ocupación de un espacio en función de variables ambientales.")
+st.sidebar.header("Ingresar Datos")
+temperature = st.sidebar.slider("Temperatura (°C)", 19.0, 25.0, 22.0)
+humidity = st.sidebar.slider("Humedad (%)", 20.0, 60.0, 40.0)
+light = st.sidebar.slider("Luz (Lux)", 0.0, 1500.0, 750.0)
+co2 = st.sidebar.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
+humidity_ratio = st.sidebar.slider("Ratio de Humedad", 0.003, 0.007, 0.005)
 
-st.subheader("🔧 Hiperparámetros Utilizados")
-st.json(hyperparams)
+input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
+scaled_data = scaler.transform(input_data)
 
-# Cargar dataset de prueba
-st.subheader("📊 Evaluación del Modelo")
-data = pd.read_csv("datatrain.csv")
-features = ['Temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']
-target = 'Occupancy'
+# --- Predicción ---
+prediction = model.predict(scaled_data)
+pred_label = "Ocupado" if prediction[0, 1] > 0.5 else "Desocupado"
 
-X_test = scaler.transform(data[features])
-y_test = data[target]
-y_pred = model.predict(X_test)
-y_pred_class = (y_pred > 0.5).astype(int)
+st.subheader("Resultado de la Predicción")
+st.write(f"El espacio está: **{pred_label}**")
 
-# Matriz de confusión
-st.subheader("📌 Matriz de Confusión")
-cm = confusion_matrix(y_test, y_pred_class)
-fig, ax = plt.subplots()
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['No Ocupado', 'Ocupado'], yticklabels=['No Ocupado', 'Ocupado'])
-plt.xlabel("Predicción")
-plt.ylabel("Real")
+# --- Mostrar hiperparámetros ---
+st.subheader("Hiperparámetros del Modelo")
+st.write({
+    "Capas Ocultas": 1,
+    "Neuronas en capa oculta": 176,
+    "Función de Activación": "ReLU",
+    "Optimizador": "RMSprop",
+    "Learning Rate": 0.065,
+    "Batch Size": 24,
+    "Epochs": 5
+})
+
+# --- Gráficos ---
+st.subheader("Distribución de Datos de Entrenamiento")
+
+train_data = pd.read_csv("datatrain.csv")  # Cargar dataset de entrenamiento
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+sns.histplot(train_data["Temperature"], bins=20, kde=True, ax=axes[0])
+axes[0].set_title("Distribución de Temperatura")
+
+sns.histplot(train_data["Humidity"], bins=20, kde=True, ax=axes[1])
+axes[1].set_title("Distribución de Humedad")
+
 st.pyplot(fig)
-
-# Reporte de clasificación
-st.subheader("📄 Reporte de Clasificación")
-st.text(classification_report(y_test, y_pred_class))
-
-# Curvas de entrenamiento (si están disponibles)
-st.subheader("📈 Curvas de Entrenamiento")
-if "history.pkl" in scaler_path:
-    history = joblib.load("history.pkl")
-    fig, ax = plt.subplots(1, 2, figsize=(12, 5))
-    ax[0].plot(history['loss'], label='Pérdida Entrenamiento')
-    ax[0].plot(history['val_loss'], label='Pérdida Validación')
-    ax[0].legend()
-    ax[0].set_title("Evolución de la Pérdida")
-    
-    ax[1].plot(history['accuracy'], label='Precisión Entrenamiento')
-    ax[1].plot(history['val_accuracy'], label='Precisión Validación')
-    ax[1].legend()
-    ax[1].set_title("Evolución de la Precisión")
-    
-    st.pyplot(fig)
-else:
-    st.warning("No se encontraron datos de historial de entrenamiento.")
-
-# Sección de predicciones interactivas
-st.subheader("🔮 Predicciones Interactivas")
-
-def user_input():
-    temp = st.number_input("Temperatura (°C)", min_value=19.0, max_value=25.0, value=22.0)
-    hum = st.number_input("Humedad (%)", min_value=20.0, max_value=60.0, value=40.0)
-    light = st.number_input("Luz (lux)", min_value=0.0, max_value=1500.0, value=750.0)
-    co2 = st.number_input("CO2 (ppm)", min_value=400.0, max_value=1200.0, value=800.0)
-    hum_ratio = st.number_input("Humedad Ratio", min_value=0.003, max_value=0.007, value=0.005)
-    return np.array([[temp, hum, light, co2, hum_ratio]])
-
-input_data = user_input()
-scaled_input = scaler.transform(input_data)
-prediction = model.predict(scaled_input)
-occupancy_status = "Ocupado" if prediction > 0.5 else "No Ocupado"
-
-st.write(f"**Predicción: {occupancy_status} (Probabilidad: {prediction[0][0]:.2f})**")

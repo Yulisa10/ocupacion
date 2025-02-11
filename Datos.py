@@ -267,7 +267,7 @@ elif seccion == "Predicciones":
             # Crear DataFrame para hacer la predicción
             input_df = pd.DataFrame([inputs])
             prediccion = model.predict(input_df)
-            st.success(f"La predicción de ocupación es: {prediccion[No ocupado]}")
+            st.success(f"La predicción de ocupación es: {prediccion[0]}")
     
     st.markdown("#### Importancia de las variables")
     if 'model' in st.session_state:

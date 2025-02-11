@@ -343,9 +343,9 @@ if st.button("Predecir"):
     # Mostrar el resultado
     st.subheader("Resultado de la Predicción:")
     if predicted_class == 1:
-        st.success("✅ La sala está ocupada.")
+        st.success("✅ ocupada.")
     else:
-        st.warning("❌ La sala está desocupada.")
+        st.warning("❌ desocupada.")
 
     # --- Mostrar hiperparámetros ---
     st.subheader("Hiperparámetros del Modelo")

@@ -334,8 +334,7 @@ elif seccion == "Modelo de redes neuronales":
         # Escalado de datos (si el modelo lo requiere)
         scaler = StandardScaler()
         input_scaled = scaler.fit_transform(input_df)
-
-       # Botón de predicción
+        # Botón de predicción
 if st.button("🤖 Predecir con Red Neuronal"):
     prediccion = neural_net_model.predict(input_scaled)
     ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
@@ -401,7 +400,4 @@ try:
 except Exception as e:
     st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
 
-
-       
-       
-                    
+      

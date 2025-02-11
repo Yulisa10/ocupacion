@@ -306,7 +306,6 @@ elif seccion == "Modelo de redes neuronales":
         st.success("✅ Modelo y scaler cargados exitosamente.")
     except Exception as e:
         st.error(f"⚠️ Error al cargar el modelo o el scaler: {e}")
-    
 
         # Diccionario con valores mínimos y máximos de cada variable
         min_max_dict = {
@@ -336,21 +335,21 @@ elif seccion == "Modelo de redes neuronales":
         input_df = pd.DataFrame([inputs])
 
         # Definir un scaler nuevo (esto solo es un parche si no puedes recuperar el original)
-scaler = StandardScaler()
+        scaler = StandardScaler()
 
-# Simular datos de entrenamiento con valores aproximados a los originales
-datos_falsos = pd.DataFrame({
-    "Temperature": [19, 22, 24, 25],
-    "Humidity": [30, 45, 55, 60],
-    "Light": [200, 600, 1000, 1500],
-    "CO2": [500, 800, 1000, 1200],
-    "HumidityRatio": [0.004, 0.005, 0.006, 0.007]
-})
+        # Simular datos de entrenamiento con valores aproximados a los originales
+        datos_falsos = pd.DataFrame({
+            "Temperature": [19, 22, 24, 25],
+            "Humidity": [30, 45, 55, 60],
+            "Light": [200, 600, 1000, 1500],
+            "CO2": [500, 800, 1000, 1200],
+            "HumidityRatio": [0.004, 0.005, 0.006, 0.007]
+        })
 
-# Ajustar el scaler con datos simulados
-scaler.fit(datos_falsos)
+        # Ajustar el scaler con datos simulados
+        scaler.fit(datos_falsos)
 
-st.warning("⚠️ Se generó un nuevo scaler basado en valores aproximados. Puede afectar la precisión del modelo.")
+        st.warning("⚠️ Se generó un nuevo scaler basado en valores aproximados. Puede afectar la precisión del modelo.")
 
         # Escalado de datos (IMPORTANTE: usar un scaler ajustado previamente)
         try:
@@ -423,6 +422,3 @@ st.warning("⚠️ Se generó un nuevo scaler basado en valores aproximados. Pue
 
         except Exception as e:
             st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
-
-    except Exception as e:
-        st.error(f"❌ Error al cargar el modelo: {e}")

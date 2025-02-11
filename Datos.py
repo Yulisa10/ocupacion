@@ -313,91 +313,94 @@ elif seccion == "Modelo de redes neuronales":
         }
 
         columnas_modelo = list(min_max_dict.keys())
-        
+
         # Entrada de datos para predicción
         st.markdown("### 📝 Introduce valores para la predicción")
         inputs = {}
 
         for col in columnas_modelo:
             min_val, max_val = min_max_dict[col]
-            min_val, max_val = float(min_val), float(max_val)
             inputs[col] = st.number_input(
                 f"{col} ({min_val} - {max_val})",
-                min_value=min_val,
-                max_value=max_val,
+                min_value=float(min_val),
+                max_value=float(max_val),
                 value=(min_val + max_val) / 2
             )
-        
-        # Convertir entrada en DataFrame y normalizar si es necesario
+
+        # Convertir entrada en DataFrame
         input_df = pd.DataFrame([inputs])
 
-        # Escalado de datos (si el modelo lo requiere)
-        scaler = StandardScaler()
-        input_scaled = scaler.fit_transform(input_df)
+        # Escalado de datos (IMPORTANTE: usar un scaler ajustado previamente)
+        try:
+            with open("scaler.pkl", "rb") as f:
+                scaler = pickle.load(f)  # Cargar scaler previamente entrenado
+            input_scaled = scaler.transform(input_df)
+        except:
+            st.error("⚠️ Error al cargar el scaler. Asegúrate de haberlo guardado durante el entrenamiento.")
+
         # Botón de predicción
-if st.button("🤖 Predecir con Red Neuronal"):
-    prediccion = neural_net_model.predict(input_scaled)
-    ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
-    st.success(f"🟢 La predicción de ocupación es: **{ocupacion}**")
+        if st.button("🤖 Predecir con Red Neuronal"):
+            prediccion = neural_net_model.predict(input_scaled)
+            ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
+            st.success(f"🟢 La predicción de ocupación es: **{ocupacion}**")
 
-# ===========================
-# Evaluación del Modelo
-# ===========================
-st.markdown("### 📊 Evaluación del Modelo de Red Neuronal")  # <-- ESTABA MAL INDENTADO
-        
-# Métricas de rendimiento (debes calcularlas previamente en tu entrenamiento)
-accuracy = 0.9934
-f1_score = 0.9862
-recall = 0.9918
-precision = 0.9807
+        # ===========================
+        # Evaluación del Modelo
+        # ===========================
+        st.markdown("### 📊 Evaluación del Modelo de Red Neuronal")
 
-metricas_df = pd.DataFrame({
-    "Métrica": ["Precisión (Accuracy)", "F1 Score", "Recall", "Precisión (Precision)"],
-    "Valor": [accuracy, f1_score, recall, precision]
-})
+        # Métricas de rendimiento
+        accuracy = 0.9934
+        f1_score = 0.9862
+        recall = 0.9918
+        precision = 0.9807
 
-# Mostrar métricas en una tabla
-st.table(metricas_df)
+        metricas_df = pd.DataFrame({
+            "Métrica": ["Precisión (Accuracy)", "F1 Score", "Recall", "Precisión (Precision)"],
+            "Valor": [accuracy, f1_score, recall, precision]
+        })
 
-# ===========================
-# Gráfico de pérdida y precisión
-# ===========================
-st.markdown("### 🔍 Evolución del entrenamiento")
+        # Mostrar métricas en una tabla
+        st.table(metricas_df)
 
-try:
-    history = neural_net_model.history_
+        # ===========================
+        # Gráfico de pérdida y precisión
+        # ===========================
+        st.markdown("### 🔍 Evolución del entrenamiento")
 
-    # Obtener métricas
-    loss = history['loss']
-    val_loss = history['val_loss']
+        try:
+            with open("history.pkl", "rb") as f:
+                history = pickle.load(f)  # Cargar historial de entrenamiento guardado
+            
+            loss = history.get('loss', [])
+            val_loss = history.get('val_loss', [])
 
-    # Si 'accuracy' no está disponible, evitar el error
-    accuracy = history.get('accuracy', None)
-    val_accuracy = history.get('val_accuracy', None)
+            accuracy = history.get('accuracy', [])
+            val_accuracy = history.get('val_accuracy', [])
 
-    # Graficar
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+            fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 
-    # Si hay datos de precisión, graficarlos
-    if accuracy and val_accuracy:
-        sns.lineplot(x=range(len(accuracy)), y=accuracy, marker='o', ax=axes[0], label='Entrenamiento')
-        sns.lineplot(x=range(len(val_accuracy)), y=val_accuracy, marker='o', ax=axes[0], label='Validación')
-        axes[0].set_title('Precisión')
-        axes[0].set_xlabel('Épocas')
-        axes[0].legend()
-    else:
-        axes[0].set_visible(False)  # Ocultar gráfico vacío si no hay datos
+            # Si hay datos de precisión, graficarlos
+            if accuracy and val_accuracy:
+                sns.lineplot(x=range(len(accuracy)), y=accuracy, marker='o', ax=axes[0], label='Entrenamiento')
+                sns.lineplot(x=range(len(val_accuracy)), y=val_accuracy, marker='o', ax=axes[0], label='Validación')
+                axes[0].set_title('Precisión')
+                axes[0].set_xlabel('Épocas')
+                axes[0].legend()
+            else:
+                axes[0].set_visible(False)
 
-    # Graficar pérdida
-    sns.lineplot(x=range(len(loss)), y=loss, marker='o', ax=axes[1], label='Entrenamiento')
-    sns.lineplot(x=range(len(val_loss)), y=val_loss, marker='o', ax=axes[1], label='Validación')
-    axes[1].set_title('Pérdida')
-    axes[1].set_xlabel('Épocas')
-    axes[1].legend()
+            # Graficar pérdida
+            sns.lineplot(x=range(len(loss)), y=loss, marker='o', ax=axes[1], label='Entrenamiento')
+            sns.lineplot(x=range(len(val_loss)), y=val_loss, marker='o', ax=axes[1], label='Validación')
+            axes[1].set_title('Pérdida')
+            axes[1].set_xlabel('Épocas')
+            axes[1].legend()
 
-    st.pyplot(fig)
+            st.pyplot(fig)
 
-except Exception as e:
-    st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
+        except Exception as e:
+            st.error(f"⚠️ No se pudieron generar los gráficos de entrenamiento: {e}")
 
-      
+    except Exception as e:
+        st.error(f"❌ Error al cargar el modelo: {e}")

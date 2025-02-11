@@ -360,14 +360,3 @@ if seccion == "Modelo de redes neuronales":
         # Mostrar probabilidades de salida
         st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
 
-    # --- Mostrar historial de predicciones solo en redes neuronales ---
-    if len(st.session_state.history) > 0:
-        st.subheader("📌 Historial de Predicciones")
-        history_df = pd.DataFrame(st.session_state.history)
-        if not history_df.empty:
-            fig = px.bar(
-                history_df, x="Prediction", 
-                y=["Temperature", "Humidity", "Light", "CO2", "Humidity Ratio"],
-                barmode="group", title="Evolución de Predicciones"
-            )
-            st.plotly_chart(fig)

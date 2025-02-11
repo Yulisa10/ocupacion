@@ -350,4 +350,3 @@ elif seccion == "Modelo XGBoost":
     sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis')
     plt.title('Importancia de las Características en el Modelo XGBoost')
     st.pyplot(plt)
-Características prin

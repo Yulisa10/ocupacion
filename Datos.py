@@ -213,18 +213,33 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     """)
 
 # Nueva sección: Modelo XGBoost
+
 elif seccion == "Modelo XGBoost":
     st.subheader("Modelo XGBoost: Predicción de Ocupación")
     st.markdown("""
-    En esta sección, exploraremos el modelo **XGBoost** (Extreme Gradient Boosting), un algoritmo potente para clasificación. Seguiremos un flujo estructurado para definir, entrenar y evaluar el modelo.
+    En esta sección, exploraremos el modelo **XGBoost** (Extreme Gradient Boosting) para predecir la ocupación de habitaciones basándonos en las siguientes variables:
+    - **Temperature**: Temperatura en la habitación.
+    - **Humidity**: Humedad en la habitación.
+    - **Light**: Nivel de luz en la habitación.
+    - **CO2**: Nivel de dióxido de carbono en la habitación.
+    - **HumidityRatio**: Relación de humedad en la habitación.
+    - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
     """)
 
     # Hiperparámetros del modelo
-    st.markdown("### 1. Configuración de Hiperparámetros")
+    st.markdown("### Hiperparámetros del Modelo XGBoost")
     st.write("""
-    Los hiperparámetros controlan el rendimiento del modelo. Ajustemos algunos valores clave:
+    Los hiperparámetros son configuraciones que controlan el comportamiento del modelo. Aquí están los principales que utilizaremos:
+    - **`n_estimators`**: Número de árboles en el modelo (por defecto: 100).
+    - **`max_depth`**: Profundidad máxima de cada árbol (por defecto: 3).
+    - **`learning_rate`**: Tasa de aprendizaje que controla la contribución de cada árbol (por defecto: 0.1).
+    - **`subsample`**: Fracción de muestras utilizadas para entrenar cada árbol (por defecto: 1.0).
+    - **`colsample_bytree`**: Fracción de características utilizadas para entrenar cada árbol (por defecto: 1.0).
+    - **`objective`**: Función de pérdida (en este caso, `binary:logistic` para clasificación binaria).
     """)
-    
+
+    # Widgets interactivos para ajustar hiperparámetros
+    st.markdown("### Ajuste Interactivo de Hiperparámetros")
     n_estimators = st.slider("Número de árboles (n_estimators)", 50, 200, 100)
     max_depth = st.slider("Profundidad máxima de los árboles (max_depth)", 1, 10, 3)
     learning_rate = st.slider("Tasa de aprendizaje (learning_rate)", 0.01, 0.5, 0.1)
@@ -232,7 +247,10 @@ elif seccion == "Modelo XGBoost":
     colsample_bytree = st.slider("Fracción de características (colsample_bytree)", 0.5, 1.0, 1.0)
 
     # Definir el modelo XGBoost
-    st.markdown("### 2. Definición y Entrenamiento del Modelo")
+    st.markdown("### Definición del Modelo")
+    st.write("""
+    A continuación, definimos el modelo XGBoost con los hiperparámetros seleccionados:
+    ```python
     model = XGBClassifier(
         n_estimators=n_estimators,
         max_depth=max_depth,
@@ -242,45 +260,103 @@ elif seccion == "Modelo XGBoost":
         objective='binary:logistic',
         random_state=42
     )
-    
+    ```
+    """)
+    model = XGBClassifier(
+        n_estimators=n_estimators,
+        max_depth=max_depth,
+        learning_rate=learning_rate,
+        subsample=subsample,
+        colsample_bytree=colsample_bytree,
+        objective='binary:logistic',
+        random_state=42
+    )
+
+    # Entrenar el modelo
+    st.markdown("### Entrenamiento del Modelo")
+    st.write("""
+    Entrenamos el modelo utilizando los datos de entrenamiento (`X_train` y `y_train`):
+    ```python
     model.fit(X_train, y_train)
-    st.success("Modelo entrenado exitosamente.")
-    
+    ```
+    """)
+    model.fit(X_train, y_train)
+
     # Realizar predicciones
-    st.markdown("### 3. Predicciones en Datos de Prueba")
+    st.markdown("### Realizar Predicciones en el Conjunto de Prueba")
+    st.write("""
+    Una vez entrenado el modelo, realizamos predicciones en el conjunto de prueba (`X_test`):
+    ```python
     y_pred = model.predict(X_test)
-    st.write("Predicciones realizadas en el conjunto de prueba.")
-    
+    ```
+    """)
+    y_pred = model.predict(X_test)
+
     # Evaluar resultados
-    st.markdown("### 4. Evaluación del Modelo")
+    st.markdown("### Evaluación del Modelo")
+    st.write("""
+    Evaluamos el rendimiento del modelo utilizando métricas como **precisión**, **F1-score**, **recall** y **exactitud (accuracy)**:
+    ```python
     accuracy = accuracy_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
     recall = recall_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred)
-    
-    st.metric("Exactitud (Accuracy)", f"{accuracy:.4f}")
-    st.metric("F1-Score", f"{f1:.4f}")
-    st.metric("Recall", f"{recall:.4f}")
-    st.metric("Precisión", f"{precision:.4f}")
-    
+    ```
+    """)
+    accuracy = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+
+    # Mostrar métricas
+    st.write(f"**Exactitud (Accuracy):** {accuracy:.4f}")
+    st.write(f"**F1-Score:** {f1:.4f}")
+    st.write(f"**Recall:** {recall:.4f}")
+    st.write(f"**Precisión (Precision):** {precision:.4f}")
+
     # Comparar predicciones con valores reales
-    st.markdown("### 5. Comparación de Predicciones vs Valores Reales")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(y_test, color='blue', label='Valores Reales', kde=True, ax=ax)
-    sns.histplot(y_pred, color='red', label='Predicciones', kde=True, ax=ax)
-    ax.legend()
-    ax.set_title('Distribución de Valores Reales vs Predicciones')
-    st.pyplot(fig)
-    
+    st.markdown("### Comparación de Predicciones vs Valores Reales")
+    st.write("""
+    A continuación, visualizamos la distribución de los valores reales (`y_test`) y las predicciones (`y_pred`) para comparar su comportamiento:
+    ```python
+    plt.figure(figsize=(10, 6))
+    sns.histplot(y_test, color='blue', label='Valores Reales', kde=True)
+    sns.histplot(y_pred, color='red', label='Predicciones', kde=True)
+    plt.legend()
+    plt.title('Distribución de Valores Reales vs Predicciones')
+    st.pyplot(plt)
+    ```
+    """)
+    plt.figure(figsize=(10, 6))
+    sns.histplot(y_test, color='blue', label='Valores Reales', kde=True)
+    sns.histplot(y_pred, color='red', label='Predicciones', kde=True)
+    plt.legend()
+    plt.title('Distribución de Valores Reales vs Predicciones')
+    st.pyplot(plt)
+
     # Importancia de las características
-    st.markdown("### 6. Importancia de las Características")
+    st.markdown("### Importancia de las Características")
+    st.write("""
+    XGBoost nos permite visualizar la importancia de cada característica en la predicción. Esto es útil para entender qué variables influyen más en el modelo:
+    ```python
     feature_importances = model.feature_importances_
     importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': feature_importances})
     importance_df = importance_df.sort_values(by='Importance', ascending=False)
-    
+    ```
+    """)
+    feature_importances = model.feature_importances_
+    importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': feature_importances})
+    importance_df = importance_df.sort_values(by='Importance', ascending=False)
+
+    # Mostrar la importancia de las características
+    st.write("**Importancia de las características:**")
     st.dataframe(importance_df)
-    
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis', ax=ax)
-    ax.set_title('Importancia de las Características en XGBoost')
-    st.pyplot(fig)
+
+    # Gráfico de importancia
+    st.write("**Gráfico de importancia de características:**")
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis')
+    plt.title('Importancia de las Características en el Modelo XGBoost')
+    st.pyplot(plt)
+
+

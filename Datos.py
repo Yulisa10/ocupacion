@@ -15,6 +15,7 @@ import gzip
 import pickle
 import xgboost as xgb
 from joblib import load
+from tensorflow.keras.models import load_model
 
 
 

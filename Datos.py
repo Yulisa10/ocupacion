@@ -296,12 +296,17 @@ if seccion == "Modelo Random Forest":
 elif seccion == "Modelo de redes neuronales":
     st.subheader("🔬 Predicción de Ocupación usando Redes Neuronales")
     
-    # Cargar el modelo previamente entrenado
-    try:
-        with gzip.open("best_model.pkl.gz", "rb") as f:
-            neural_net_model = pickle.load(f)
+    # Cargar modelo  previamente entrenado y scaler
+try:
+    with gzip.open("best_model.pkl.gz", "rb") as f:
+        data = pickle.load(f)
+        neural_net_model = data["model"]
+        scaler = data["scaler"]  # Recuperar el scaler
         
-        st.success("✅ Modelo de Red Neuronal cargado exitosamente.")
+    st.success("✅ Modelo y scaler cargados exitosamente.")
+except Exception as e:
+    st.error(f"⚠️ Error al cargar el modelo o el scaler: {e}")
+    
 
         # Diccionario con valores mínimos y máximos de cada variable
         min_max_dict = {

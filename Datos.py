@@ -231,51 +231,16 @@ seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Expl
 # Cargar el modelo
 if seccion == "Carga del Modelo":
     st.markdown("### Carga del Modelo Preentrenado")
-    model_path = "random_forest_model.pkl"  # Cambiado a .pkl
     
+# Función para cargar el modelo
+def load_model():
     try:
-        with open(model_path, "rb") as f:
+        with gzip.open('random_forest_model.pkl.gz', 'rb') as f:
             model = pickle.load(f)
-        st.success("Modelo cargado correctamente.")
-    except FileNotFoundError:
-        st.error("No se encontró el archivo del modelo. Asegúrate de entrenarlo y guardarlo previamente.")
-        st.stop()
-    except pickle.UnpicklingError:
-        st.error("Error al deserializar el modelo. Verifica que el archivo no esté corrupto.")
-        st.stop()
+        return model
     except Exception as e:
-        st.error(f"Ocurrió un error inesperado: {e}")
-        st.stop()
-
-# Exploración de datos
-elif seccion == "Exploración de Datos":
-    st.markdown("### Exploración de Datos")
-    
-    # Cargar dataset de ejemplo
-    data_path = "datatest.csv"  # Asegúrate de tener este archivo
-    try:
-        df = pd.read_csv(data_path)
-        st.write("Vista previa de los datos:")
-        st.dataframe(df.head())
-
-        # Mostrar estadísticas descriptivas
-        st.write("Resumen estadístico de los datos:")
-        st.write(df.describe())
-
-        # Gráfico de distribución de la variable objetivo
-        st.write("Distribución de la variable objetivo")
-        plt.figure(figsize=(8, 5))
-        sns.histplot(df['ocupacion'], bins=20, kde=True)
-        st.pyplot(plt)
-
-        # Correlaciones
-        st.write("Matriz de correlación")
-        plt.figure(figsize=(10, 6))
-        sns.heatmap(df.corr(), annot=True, cmap='coolwarm', fmt='.2f')
-        st.pyplot(plt)
-    except FileNotFoundError:
-        st.error("No se encontró el archivo de datos. Asegúrate de subirlo correctamente.")
-        st.stop()
+        st.error(f"Error al cargar el modelo: {e}")
+        return None
 
 # Predicciones
 elif seccion == "Predicciones":

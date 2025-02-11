@@ -223,18 +223,18 @@ elif seccion == "Modelo XGBoost":
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
     """)
 
- # Configuración de la aplicación
-st.title("Predicción de Ocupación con XGBoost")
+# Configuración de la aplicación
+st.title("Predicción de Ocupación con Random Forest")
 st.sidebar.title("Navegación")
 seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Exploración de Datos", "Predicciones"])
 
 # Cargar el modelo
 if seccion == "Carga del Modelo":
     st.markdown("### Carga del Modelo Preentrenado")
-    model_path = "xgb_model.pkl.gz"
+    model_path = "random_forest_model.pkl"  # Cambiado a .pkl
     
     try:
-        with gzip.open(model_path, "rb") as f:
+        with open(model_path, "rb") as f:
             model = pickle.load(f)
         st.success("Modelo cargado correctamente.")
     except FileNotFoundError:
@@ -252,7 +252,7 @@ elif seccion == "Exploración de Datos":
     st.markdown("### Exploración de Datos")
     
     # Cargar dataset de ejemplo
-    data_path = "datos_ocupacion.csv"  # Asegúrate de tener este archivo
+    data_path = "datatest.csv"  # Asegúrate de tener este archivo
     try:
         df = pd.read_csv(data_path)
         st.write("Vista previa de los datos:")
@@ -279,7 +279,7 @@ elif seccion == "Exploración de Datos":
 
 # Predicciones
 elif seccion == "Predicciones":
-    st.markdown("### Predicciones del Modelo XGBoost")
+    st.markdown("### Predicciones del Modelo Random Forest")
     
     if 'model' not in locals():
         st.error("El modelo no está cargado. Ve a la sección 'Carga del Modelo' primero.")
@@ -288,7 +288,8 @@ elif seccion == "Predicciones":
         
         # Crear entradas dinámicas según las variables del modelo
         inputs = {}
-        for col in ['variable1', 'variable2', 'variable3']:  # Reemplaza con las columnas reales
+        # Reemplaza con las columnas reales que el modelo espera
+        for col in ['feature1', 'feature2', 'feature3', 'feature4', 'feature5']:  # Ajusta según las características del modelo
             inputs[col] = st.number_input(f"{col}", value=0.0)
         
         if st.button("Predecir"):
@@ -299,7 +300,7 @@ elif seccion == "Predicciones":
     st.markdown("#### Importancia de las variables")
     if 'model' in locals():
         importancia = model.feature_importances_
-        variables = ['variable1', 'variable2', 'variable3']  # Reemplaza con las columnas reales
+        variables = ['temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']  # Ajusta según las características del modelo
         imp_df = pd.DataFrame({'Variable': variables, 'Importancia': importancia})
         imp_df = imp_df.sort_values(by='Importancia', ascending=False)
         

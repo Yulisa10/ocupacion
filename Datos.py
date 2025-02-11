@@ -209,7 +209,7 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     ### Conclusión Final:
     El **Random Forest Classifier** fue seleccionado como el mejor modelo debido a su alto rendimiento, capacidad para manejar el desequilibrio de clases, interpretabilidad de las características y robustez ante el overfitting. Estos factores lo convierten en la opción más adecuada para la tarea de predecir la ocupación de habitaciones, superando a otros modelos como XGBoost, Decision Tree, KNN y la red neuronal en este contexto específico.
     """)
-    
+if seccion == "Random Forest":
 # Sección del modelo Random Forest
 elif seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")

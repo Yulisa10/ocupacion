@@ -34,7 +34,7 @@ seccion = st.sidebar.radio("Tabla de Contenidos",
                             "Distribución de la variable objetivo", 
                             "Boxplots", 
                             "Conclusión: Selección del Mejor Modelo",  # Nueva ubicación
-                            "Modelo random_fores",  # Nueva sección
+                            "Modelo Random Forest",  # Nueva sección
                             "Modelo de redes neuronales"])
 # Cargar datos
 @st.cache_data
@@ -226,7 +226,7 @@ elif seccion == "Modelo Random Forest":
 # Configuración de la aplicación
 st.title("Predicción de Ocupación con Random Forest")
 st.sidebar.title("Navegación")
-seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo Random Forest", "Predicciones"])
+seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Predicciones"])
 
 # Función para cargar el modelo
 def load_model():
@@ -267,7 +267,7 @@ elif seccion == "Predicciones":
             # Crear DataFrame para hacer la predicción
             input_df = pd.DataFrame([inputs])
             prediccion = model.predict(input_df)
-            st.success(f"La predicción de ocupación es: {prediccion[0]}")
+            st.success(f"La predicción de ocupación es: {prediccion[No ocupado]}")
     
     st.markdown("#### Importancia de las variables")
     if 'model' in st.session_state:

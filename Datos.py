@@ -318,9 +318,6 @@ if seccion == "Modelo de redes neuronales":
     co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
     humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
 
-    # --- Sección de Redes Neuronales ---
-    st.subheader("🤖 Predicción con Redes Neuronales")
-
     # --- Botón de predicción ---
     if st.button("Predecir con Redes Neuronales"):
         # Crear array con los valores ingresados

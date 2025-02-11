@@ -210,11 +210,17 @@ elif seccion == "Conclusión: Selección del Mejor Modelo":
     El **XGBoost Classifier** fue seleccionado como el mejor modelo debido a su alto rendimiento, capacidad para manejar el desequilibrio de clases, interpretabilidad de las características, eficiencia y robustez ante el overfitting. Estos factores lo convierten en la opción más adecuada para la tarea de predecir la ocupación de habitaciones, superando a otros modelos como Random Forest, Decision Tree, KNN y la red neuronal en este contexto específico.
     """)
 
-# Nueva sección: Modelo Random Forest
-elif seccion == "Modelo Random Forest":
+# Título y configuración de la barra lateral
+st.title("Predicción de Ocupación con Random Forest")
+st.sidebar.title("Navegación")
+
+# Sección única
+seccion = st.sidebar.radio("Selecciona una sección", ["Modelo Random Forest"])
+
+if seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")
     st.markdown("""
-    En esta sección, exploraremos el modelo **random_forest_model.pkl** (Random Forest) para predecir la ocupación de habitaciones basándonos en las siguientes variables:
+    En esta sección, exploraremos el modelo **Random Forest** para predecir la ocupación de habitaciones basándonos en las siguientes variables:
     - **Temperature**: Temperatura en la habitación.
     - **Humidity**: Humedad en la habitación.
     - **Light**: Nivel de luz en la habitación.
@@ -223,65 +229,50 @@ elif seccion == "Modelo Random Forest":
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
     """)
 
-# Configuración de la aplicación
-st.title("Predicción de Ocupación con Random Forest")
-st.sidebar.title("Navegación")
-seccion = st.sidebar.radio("Selecciona una sección", ["Carga del Modelo", "Predicciones"])
+    # Función para cargar el modelo
+    def load_model():
+        try:
+            with gzip.open('random_forest_model.pkl.gz', 'rb') as f:
+                model = pickle.load(f)
+            return model
+        except Exception as e:
+            st.error(f"Error al cargar el modelo: {e}")
+            return None
 
-# Función para cargar el modelo
-def load_model():
-    try:
-        with gzip.open('random_forest_model.pkl.gz', 'rb') as f:
-            model = pickle.load(f)
-        return model
-    except Exception as e:
-        st.error(f"Error al cargar el modelo: {e}")
-        return None
+    # Cargar el modelo automáticamente si no está en la sesión
+    if "model" not in st.session_state:
+        st.session_state.model = load_model()
 
-# Cargar el modelo cuando se selecciona la sección correspondiente
-if seccion == "Carga del Modelo":
-    st.markdown("### Carga del Modelo Preentrenado")
-    model = load_model()
-    if model is not None:
+    # Verificar si el modelo se cargó correctamente
+    if st.session_state.model is not None:
         st.success("Modelo cargado correctamente.")
-        st.session_state.model = model  # Guardar el modelo en el estado de sesión para usarlo en otra sección
-    else:
-        st.error("Hubo un problema al cargar el modelo.")
-        
-# Predicciones cuando se selecciona la sección correspondiente
-elif seccion == "Predicciones":
-    st.markdown("### Predicciones del Modelo Random Forest")
-    
-    if 'model' not in st.session_state:
-        st.error("El modelo no está cargado. Ve a la sección 'Carga del Modelo' primero.")
-    else:
-        model = st.session_state.model  # Recuperar el modelo desde el estado de la sesión
+        model = st.session_state.model
+
+        # Entrada de datos para predicción
+        st.markdown("### Hacer una predicción")
         st.write("Introduce valores para hacer una predicción:")
-        
-        # Crear entradas dinámicas según las variables del modelo
         inputs = {}
-        for col in ['Temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']:  # Ajusta según las características del modelo
+        columnas_modelo = ['Temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']
+
+        for col in columnas_modelo:
             inputs[col] = st.number_input(f"{col}", value=0.0)
-        
+
         if st.button("Predecir"):
-            # Crear DataFrame para hacer la predicción
             input_df = pd.DataFrame([inputs])
             prediccion = model.predict(input_df)
             st.success(f"La predicción de ocupación es: {prediccion[0]}")
-    
-    st.markdown("#### Importancia de las variables")
-    if 'model' in st.session_state:
-        model = st.session_state.model
+
+        # Importancia de las variables
+        st.markdown("### Importancia de las variables")
         importancia = model.feature_importances_
-        variables = ['Temperature', 'Humidity', 'Light', 'CO2', 'HumidityRatio']  # Ajusta según las características del modelo
-        imp_df = pd.DataFrame({'Variable': variables, 'Importancia': importancia})
+        imp_df = pd.DataFrame({'Variable': columnas_modelo, 'Importancia': importancia})
         imp_df = imp_df.sort_values(by='Importancia', ascending=False)
-        
+
         plt.figure(figsize=(8, 5))
         sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
         st.pyplot(plt)
 
-# Incluir en la barra lateral la advertencia para cargar el modelo
-st.sidebar.info("Asegúrate de cargar el modelo antes de hacer predicciones")
+    else:
+        st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
-
+st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")

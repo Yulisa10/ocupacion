@@ -249,7 +249,7 @@ if seccion == "Modelo Random Forest":
         st.success("Modelo cargado correctamente.")
         model = st.session_state.model
 
-      # Entrada de datos para predicción
+        # Entrada de datos para predicción
 st.markdown("### Hacer una predicción")
 st.write("Introduce valores para hacer una predicción:")
 inputs = {}

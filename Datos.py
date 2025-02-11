@@ -281,16 +281,16 @@ if st.button("Predecir"):
     ocupacion = "Ocupada" if prediccion[0] == 1 else "No Ocupada"
     st.success(f"La predicción de ocupación es: {ocupacion}")
 
-        # Importancia de las variables
-        st.markdown("### Importancia de las variables")
-        importancia = model.feature_importances_
-        imp_df = pd.DataFrame({'Variable': list(columnas_modelo.keys()), 'Importancia': importancia})
-        imp_df = imp_df.sort_values(by='Importancia', ascending=False)
+    # Importancia de las variables
+    st.markdown("### Importancia de las variables")
+    importancia = model.feature_importances_
+    imp_df = pd.DataFrame({'Variable': columnas_modelo, 'Importancia': importancia})
+    imp_df = imp_df.sort_values(by='Importancia', ascending=False)
 
-        plt.figure(figsize=(8, 5))
-        sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
-        plt.xlabel("Importancia (%)")
-        st.pyplot(plt)
+    plt.figure(figsize=(8, 5))
+    sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
+    st.pyplot(plt)
+    
     else:
         st.error("No se pudo cargar el modelo. Verifica el archivo.")
 

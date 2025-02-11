@@ -294,79 +294,40 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
-
-# Cargar modelo y scaler
-@st.cache_resource
-def load_neural_net():
-    model = load_model("best_model.pkl.gz")
-    scaler = joblib.load("scaler.pkl")
-    return model, scaler
-
-st.title("🔍 Análisis del Modelo de Redes Neuronales")
+# Cargar el modelo
+MODEL_PATH = "/mnt/data/best_model.h5"
+SCALER_PATH = "/mnt/data/scaler.pkl"  # Asegúrate de subir el scaler si se necesita
 
 try:
-    model, scaler = load_neural_net()
+    model = load_model(MODEL_PATH)
+    scaler = joblib.load(SCALER_PATH)
     st.success("✅ Modelo y scaler cargados exitosamente.")
-    
-    # Cargar datos de prueba
-    X_test = np.load("X_test.npy")
-    y_test = np.load("y_test.npy")
-    
-    # Predicciones
-    y_pred_prob = model.predict(scaler.transform(X_test))
-    y_pred = np.argmax(y_pred_prob, axis=1)
-    
-    # Sección 1: Visualización de activaciones
-    st.subheader("📊 Visualización de Activaciones")
-    layer_outputs = [layer.output for layer in model.layers]
-    activation_model = tf.keras.Model(inputs=model.input, outputs=layer_outputs)
-    activations = activation_model.predict(scaler.transform(X_test[:1]))
-    
-    for i, activation in enumerate(activations):
-        st.write(f"Capa {i+1}: {model.layers[i].name}")
-        fig, ax = plt.subplots()
-        sns.heatmap(activation, cmap='viridis', ax=ax)
-        st.pyplot(fig)
-
-    # Sección 2: Matriz de confusión y clasificación
-    st.subheader("✅ Matriz de Confusión y Reporte de Clasificación")
-    cm = confusion_matrix(y_test, y_pred)
-    fig, ax = plt.subplots()
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['No Ocupada', 'Ocupada'], yticklabels=['No Ocupada', 'Ocupada'])
-    st.pyplot(fig)
-    st.text(classification_report(y_test, y_pred))
-
-    # Sección 3: Predicción en Vivo
-    st.subheader("📝 Predicción en Vivo")
-    user_input = [st.number_input(f"Feature {i+1}", value=0.0) for i in range(X_test.shape[1])]
-    if st.button("Predecir"):
-        scaled_input = scaler.transform([user_input])
-        pred_prob = model.predict(scaled_input)
-        prediction = "Ocupada" if np.argmax(pred_prob) == 1 else "No Ocupada"
-        st.success(f"🚀 Predicción: {prediction}")
-
-    # Sección 4: Importancia de Características (SHAP o correlaciones)
-    st.subheader("📌 Importancia de Características")
-    importance = np.mean(np.abs(model.layers[1].get_weights()[0]), axis=1)
-    df_importance = pd.DataFrame({'Feature': [f'Feature {i+1}' for i in range(len(importance))], 'Importance': importance})
-    df_importance = df_importance.sort_values(by='Importance', ascending=False)
-    fig, ax = plt.subplots()
-    sns.barplot(x='Importance', y='Feature', data=df_importance, ax=ax)
-    st.pyplot(fig)
-
-    # Sección 5: Curva de Aprendizaje
-    st.subheader("📈 Curva de Aprendizaje")
-    history = joblib.load("history.pkl")
-    fig, ax = plt.subplots()
-    ax.plot(history['accuracy'], label='Train Accuracy')
-    ax.plot(history['val_accuracy'], label='Validation Accuracy')
-    ax.set_title("Curva de Aprendizaje")
-    ax.set_xlabel("Épocas")
-    ax.set_ylabel("Precisión")
-    ax.legend()
-    st.pyplot(fig)
-    
 except Exception as e:
-    st.error(f"⚠️ Error: {e}")
+    st.error(f"⚠️ Error al cargar el modelo o el scaler: {e}")
+    st.stop()
+
+# Configurar la interfaz de Streamlit
+st.title("Predicción de Ocupación con Redes Neuronales")
+st.write("Ingrese las características para realizar una predicción.")
+
+# Definir entradas del usuario
+feature_1 = st.number_input("Temperatura", value=20.0)
+feature_2 = st.number_input("Humedad", value=50.0)
+feature_3 = st.number_input("CO2", value=400.0)
+feature_4 = st.number_input("Humedad Relativa", value=30.0)
+feature_5 = st.number_input("Iluminación", value=300.0)
+
+# Botón de predicción
+if st.button("Predecir"):
+    try:
+        input_data = np.array([[feature_1, feature_2, feature_3, feature_4, feature_5]])
+        input_data_scaled = scaler.transform(input_data)  # Escalar los datos
+        prediction = model.predict(input_data_scaled)
+        predicted_class = np.argmax(prediction, axis=1)[0]  # 0: No Ocupado, 1: Ocupado
+        resultado = "Ocupado" if predicted_class == 1 else "No Ocupado"
+        st.success(f"🚀 Predicción: {resultado}")
+    except Exception as e:
+        st.error(f"⚠️ Error al hacer la predicción: {e}")
+
     
 

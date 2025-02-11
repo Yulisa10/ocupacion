@@ -294,82 +294,78 @@ if seccion == "Modelo Random Forest":
 # SECCIÓN: REDES NEURONALES
 # ==============================
 
-def cargar_modelo():
-    try:
-        with gzip.open("best_model.pkl.gz", "rb") as f:
-            data = pickle.load(f)
-        return data.get("model"), data.get("scaler")
-    except Exception as e:
-        st.error(f"⚠️ Error al cargar el modelo o el scaler: {e}")
-        return None, None
-
-def cargar_historial():
-    try:
-        with open("history.pkl", "rb") as f:
-            history = pickle.load(f)
-        return history
-    except Exception as e:
-        st.warning("⚠️ No se encontró el historial de entrenamiento.")
-        return None
-
 # Cargar modelo y scaler
-neural_net_model, scaler = cargar_modelo()
-history = cargar_historial()
+@st.cache_resource
+def load_neural_net():
+    model = load_model("best_model.pkl.gz")
+    scaler = joblib.load("scaler.pkl")
+    return model, scaler
 
-# Mostrar información del modelo
-st.subheader("🔬 Análisis del Modelo de Redes Neuronales")
+st.title("🔍 Análisis del Modelo de Redes Neuronales")
 
-if neural_net_model:
-    st.success("✅ Modelo cargado exitosamente.")
-    st.markdown("### 📌 Arquitectura del Modelo")
-    st.text(neural_net_model.summary())
-else:
-    st.error("❌ No se pudo cargar el modelo.")
+try:
+    model, scaler = load_neural_net()
+    st.success("✅ Modelo y scaler cargados exitosamente.")
+    
+    # Cargar datos de prueba
+    X_test = np.load("X_test.npy")
+    y_test = np.load("y_test.npy")
+    
+    # Predicciones
+    y_pred_prob = model.predict(scaler.transform(X_test))
+    y_pred = np.argmax(y_pred_prob, axis=1)
+    
+    # Sección 1: Visualización de activaciones
+    st.subheader("📊 Visualización de Activaciones")
+    layer_outputs = [layer.output for layer in model.layers]
+    activation_model = tf.keras.Model(inputs=model.input, outputs=layer_outputs)
+    activations = activation_model.predict(scaler.transform(X_test[:1]))
+    
+    for i, activation in enumerate(activations):
+        st.write(f"Capa {i+1}: {model.layers[i].name}")
+        fig, ax = plt.subplots()
+        sns.heatmap(activation, cmap='viridis', ax=ax)
+        st.pyplot(fig)
 
-# Gráficos de entrenamiento
-if history:
-    st.markdown("### 📊 Evolución del Entrenamiento")
-    loss = history.get('loss', [])
-    val_loss = history.get('val_loss', [])
-    accuracy = history.get('accuracy', [])
-    val_accuracy = history.get('val_accuracy', [])
-    
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-    
-    # Precisión
-    if accuracy and val_accuracy:
-        sns.lineplot(x=range(len(accuracy)), y=accuracy, marker='o', ax=axes[0], label='Entrenamiento')
-        sns.lineplot(x=range(len(val_accuracy)), y=val_accuracy, marker='o', ax=axes[0], label='Validación')
-        axes[0].set_title('Precisión')
-        axes[0].set_xlabel('Épocas')
-        axes[0].legend()
-    
-    # Pérdida
-    sns.lineplot(x=range(len(loss)), y=loss, marker='o', ax=axes[1], label='Entrenamiento')
-    sns.lineplot(x=range(len(val_loss)), y=val_loss, marker='o', ax=axes[1], label='Validación')
-    axes[1].set_title('Pérdida')
-    axes[1].set_xlabel('Épocas')
-    axes[1].legend()
-    
+    # Sección 2: Matriz de confusión y clasificación
+    st.subheader("✅ Matriz de Confusión y Reporte de Clasificación")
+    cm = confusion_matrix(y_test, y_pred)
+    fig, ax = plt.subplots()
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['No Ocupada', 'Ocupada'], yticklabels=['No Ocupada', 'Ocupada'])
+    st.pyplot(fig)
+    st.text(classification_report(y_test, y_pred))
+
+    # Sección 3: Predicción en Vivo
+    st.subheader("📝 Predicción en Vivo")
+    user_input = [st.number_input(f"Feature {i+1}", value=0.0) for i in range(X_test.shape[1])]
+    if st.button("Predecir"):
+        scaled_input = scaler.transform([user_input])
+        pred_prob = model.predict(scaled_input)
+        prediction = "Ocupada" if np.argmax(pred_prob) == 1 else "No Ocupada"
+        st.success(f"🚀 Predicción: {prediction}")
+
+    # Sección 4: Importancia de Características (SHAP o correlaciones)
+    st.subheader("📌 Importancia de Características")
+    importance = np.mean(np.abs(model.layers[1].get_weights()[0]), axis=1)
+    df_importance = pd.DataFrame({'Feature': [f'Feature {i+1}' for i in range(len(importance))], 'Importance': importance})
+    df_importance = df_importance.sort_values(by='Importance', ascending=False)
+    fig, ax = plt.subplots()
+    sns.barplot(x='Importance', y='Feature', data=df_importance, ax=ax)
     st.pyplot(fig)
 
-# Simulación de predicción
-st.markdown("### 📝 Simulación de Predicción")
-
-if neural_net_model and scaler:
-    # Valores de entrada simulados
-    input_data = pd.DataFrame({
-        "Temperature": [22.5],
-        "Humidity": [50],
-        "Light": [800],
-        "CO2": [900],
-        "HumidityRatio": [0.005]
-    })
-    input_scaled = scaler.transform(input_data)
-    prediccion = neural_net_model.predict(input_scaled)
-    ocupacion = "Ocupada" if prediccion[0][0] >= 0.5 else "No Ocupada"
-    st.success(f"🟢 Predicción simulada: **{ocupacion}**")
-else:
-    st.warning("⚠️ No se pudo hacer la predicción real. Generando un resultado simulado...")
-    st.success(f"🟢 Predicción simulada: **{'Ocupada' if np.random.rand() > 0.5 else 'No Ocupada'}**")
+    # Sección 5: Curva de Aprendizaje
+    st.subheader("📈 Curva de Aprendizaje")
+    history = joblib.load("history.pkl")
+    fig, ax = plt.subplots()
+    ax.plot(history['accuracy'], label='Train Accuracy')
+    ax.plot(history['val_accuracy'], label='Validation Accuracy')
+    ax.set_title("Curva de Aprendizaje")
+    ax.set_xlabel("Épocas")
+    ax.set_ylabel("Precisión")
+    ax.legend()
+    st.pyplot(fig)
+    
+except Exception as e:
+    st.error(f"⚠️ Error: {e}")
+    
 

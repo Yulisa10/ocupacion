@@ -295,87 +295,83 @@ if seccion == "Modelo Random Forest":
 # ==============================
 # SECCIÓN: REDES NEURONALES
 # ==============================
+
+# --- Sidebar para la selección del modelo ---
+st.sidebar.title("Menú")
 opcion = st.sidebar.radio("Seleccione el modelo a utilizar:", 
                           ["Exploración de Datos", "Modelo de Redes Neuronales"])
 
+# --- Opción de Exploración de Datos ---
+if opcion == "Exploración de Datos":
+    st.title("📊 Exploración de Datos")
+    st.markdown("Aquí se pueden visualizar y analizar los datos utilizados en el modelo.")
+
+    # Cargar dataset de entrenamiento
+    @st.cache_resource
+    def load_data():
+        return pd.read_csv("datatrain.csv")
+
+    df = load_data()
+
+    # Mostrar los primeros datos
+    st.dataframe(df.head())
+
+    # Gráficos interactivos
+    fig = px.scatter(df, x="Light", y="CO2", color="Occupancy",
+                     title="Relación entre Luz y CO2 vs Ocupación")
+    st.plotly_chart(fig)
+
 # --- Si el usuario elige "Modelo de Redes Neuronales", cargar modelo y scaler ---
-if opcion == "Modelo de Redes Neuronales":
-# --- Cargar modelo y scaler ---
-@st.cache_resource
-def load_assets():
-    model = tf.keras.models.load_model("best_model.h5")
-    with open("scaler.pkl", "rb") as f:
-        scaler = pickle.load(f)
-    return model, scaler
-
-model, scaler = load_assets()
-
-# --- Título de la aplicación ---
-st.title("🔍 Predicción de Ocupación con Redes Neuronales")
-
-st.markdown("Ingrese los valores de las variables para hacer una predicción:")
-
-# --- Entrada de usuario con sliders ---
-temperature = st.slider("Temperature (°C)", 19.0, 25.0, 22.0)
-humidity = st.slider("Humidity (%)", 20.0, 60.0, 40.0)
-light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
-co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
-humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
-
-# --- Inicializar historial de predicciones ---
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-# --- Sección de Redes Neuronales ---
-st.subheader("🤖 Predicción con Redes Neuronales")
-
-# --- Botón de predicción ---
-if st.button("Predecir con Redes Neuronales"):
-    # Crear array con los valores ingresados
-    input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
+elif opcion == "Modelo de Redes Neuronales":
     
-    # Escalar los valores de entrada
-    input_scaled = scaler.transform(input_data)
-    
-    # Hacer la predicción con el modelo
-    prediction = model.predict(input_scaled)
-    
-    # 🔄 INVERSIÓN DE LA PREDICCIÓN 🔄
-    predicted_class = np.argmax(prediction)
-    predicted_class = 1 - predicted_class  # Invertimos la lógica de la predicción
-    
-    # Guardar en el historial solo para la sección de redes neuronales
-    st.session_state.history.append({
-        "Temperature": temperature,
-        "Humidity": humidity,
-        "Light": light,
-        "CO2": co2,
-        "Humidity Ratio": humidity_ratio,
-        "Prediction": "Ocupada" if predicted_class == 1 else "Desocupada"
+    @st.cache_resource
+    def load_assets():
+        model = tf.keras.models.load_model("best_model.h5")
+        with open("scaler.pkl", "rb") as f:
+            scaler = pickle.load(f)
+        return model, scaler
+
+    # Cargar modelo y scaler
+    model, scaler = load_assets()
+
+    # --- Título ---
+    st.title("🔍 Predicción de Ocupación con Redes Neuronales")
+
+    st.markdown("Ingrese los valores de las variables para hacer una predicción:")
+
+    # --- Entrada de usuario con sliders ---
+    temperature = st.slider("Temperature (°C)", 19.0, 25.0, 22.0)
+    humidity = st.slider("Humidity (%)", 20.0, 60.0, 40.0)
+    light = st.slider("Light (lux)", 0.0, 1500.0, 750.0)
+    co2 = st.slider("CO2 (ppm)", 400.0, 1200.0, 800.0)
+    humidity_ratio = st.slider("Humidity Ratio", 0.003, 0.007, 0.005)
+
+    # --- Botón de predicción ---
+    if st.button("Predecir"):
+        # Crear array con los valores ingresados
+        input_data = np.array([[temperature, humidity, light, co2, humidity_ratio]])
+        
+        # Escalar los valores de entrada
+        input_scaled = scaler.transform(input_data)
+        
+        # Hacer la predicción con el modelo
+        prediction = model.predict(input_scaled)
+        predicted_class = np.argmax(prediction)
+
+        # Invertir la lógica si es necesario
+        if predicted_class == 0:
+            st.success("✅ La sala está ocupada.")
+        else:
+            st.warning("❌ La sala está desocupada.")
+
+    # --- Mostrar hiperparámetros del modelo ---
+    st.subheader("📌 Hiperparámetros del Modelo")
+    st.write({
+        "Capas Ocultas": 1,
+        "Neuronas en capa oculta": 176,
+        "Función de Activación": "ReLU",
+        "Optimizador": "RMSprop",
+        "Learning Rate": 0.065,
+        "Batch Size": 24,
+        "Epochs": 5
     })
-    
-    # Mostrar el resultado
-    st.subheader("🧠 Resultado de la Predicción:")
-    if predicted_class == 1:
-        st.success("✅ La sala está ocupada.")
-    else:
-        st.warning("❌ La sala está desocupada.")
-
-    # Mostrar probabilidades de salida
-    st.write("📊 **Predicción cruda (probabilidades softmax):**", prediction)
-
-# --- Mostrar historial de predicciones solo en redes neuronales ---
-if len(st.session_state.history) > 0:
-    st.subheader("📌 Historial de Predicciones")
-
-# --- Mostrar hiperparámetros del modelo ---
-st.subheader("⚙️ Hiperparámetros del Modelo")
-st.write({
-    "Capas Ocultas": 1,
-    "Neuronas en capa oculta": 176,
-    "Función de Activación": "ReLU",
-    "Optimizador": "RMSprop",
-    "Learning Rate": 0.065,
-    "Batch Size": 24,
-    "Epochs": 5
-})

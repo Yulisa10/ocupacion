@@ -36,13 +36,14 @@ seccion = st.sidebar.radio("Tabla de Contenidos",
                             "Modelo XGBoost",  # Nueva sección
                             "Modelo de redes neuronales"])
 
-# Cargar los datos
+@st.cache_data
 def load_data():
     df_train = pd.read_csv("https://raw.githubusercontent.com/JuanPablo9999/Mineria_de_datos_streamlit/main/datatrain.csv")
     df_test = pd.read_csv("https://raw.githubusercontent.com/JuanPablo9999/Mineria_de_datos_streamlit/main/datatest.csv")
-    df_train = pd.read_csv(datatrain.csv)
-    df_test = pd.read_csv(datatest.csv)
-    return
+    return df_train, df_test
+
+# Cargar los datos y asegurarse de que están disponibles antes de usarlos
+df_train, df_test = load_data()
 
 # Preprocesamiento
 for df in [df_train, df_test]:

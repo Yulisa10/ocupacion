@@ -215,22 +215,15 @@ elif seccion == "Modelo Random Forest":
     st.subheader("Modelo Random Forest: Predicción de Ocupación")
     st.markdown("""
     En esta sección, exploraremos el modelo **Random Forest** para predecir la ocupación de habitaciones basándonos en las siguientes variables:
-    - **Temperature**: Temperatura en la habitación (Min: 19.0, Max: 24.0).
-    - **Humidity**: Humedad en la habitación (Min: 20.0, Max: 60.0).
-    - **Light**: Nivel de luz en la habitación (Min: 0, Max: 1600).
-    - **CO2**: Nivel de dióxido de carbono en la habitación (Min: 400, Max: 2000).
-    - **HumidityRatio**: Relación de humedad en la habitación (Min: 0.002, Max: 0.006).
+    - **Temperature**: Temperatura en la habitación.
+    - **Humidity**: Humedad en la habitación.
+    - **Light**: Nivel de luz en la habitación.
+    - **CO2**: Nivel de dióxido de carbono en la habitación.
+    - **HumidityRatio**: Relación de humedad en la habitación.
     - **Occupancy**: Variable objetivo que indica si la habitación está ocupada (1) o no (0).
-    """)
+     """)
 
-    # Mostrar métricas de evaluación del modelo
-    st.markdown("### Métricas de Evaluación del Modelo")
-    st.write("- **Accuracy:** 0.9934")
-    st.write("- **F1 Score:** 0.9862")
-    st.write("- **Recall Score:** 0.9918")
-    st.write("- **Precision Score:** 0.9807")
-
-    # Función para cargar el modelo
+    # Cargar el modelo
     def load_model():
         try:
             with gzip.open('random_forest_model.pkl.gz', 'rb') as f:
@@ -240,56 +233,57 @@ elif seccion == "Modelo Random Forest":
             st.error(f"Error al cargar el modelo: {e}")
             return None
 
-    # Cargar el modelo automáticamente si no está en la sesión
+    # Verificar si el modelo está cargado en la sesión
     if "model" not in st.session_state:
         st.session_state.model = load_model()
 
-    # Verificar si el modelo se cargó correctamente
     if st.session_state.model is not None:
         st.success("Modelo cargado correctamente.")
         model = st.session_state.model
 
-# Entrada de datos para predicción
-st.markdown("### Hacer una predicción")
-st.write("Introduce valores para hacer una predicción:")
-inputs = {}
+        # **Solo aparece en la sección Random Forest**
+        st.markdown("### Hacer una predicción")
+        st.write("Introduce valores para hacer una predicción:")
+        inputs = {}
 
-# Diccionario con valores mínimos y máximos de cada variable
-min_max_dict = {
-    'Temperature': (19.0, 25.0),
-    'Humidity': (20.0, 60.0),
-    'Light': (0.0, 1500.0),
-    'CO2': (400.0, 1200.0),
-    'HumidityRatio': (0.003, 0.007)
-}
+        # Diccionario con valores mínimos y máximos de cada variable
+        min_max_dict = {
+            'Temperature': (19.0, 25.0),
+            'Humidity': (20.0, 60.0),
+            'Light': (0.0, 1500.0),
+            'CO2': (400.0, 1200.0),
+            'HumidityRatio': (0.003, 0.007)
+        }
 
-columnas_modelo = list(min_max_dict.keys())
+        columnas_modelo = list(min_max_dict.keys())
 
-for col in columnas_modelo:
-    min_val, max_val = min_max_dict[col]  # Obtén los valores mínimos y máximos de cada variable
-    min_val, max_val = float(min_val), float(max_val)  # Convertir a flotante para evitar errores en Streamlit
-    inputs[col] = st.number_input(
-        f"{col} ({min_val} - {max_val})", 
-        min_value=min_val, 
-        max_value=max_val, 
-        value=(min_val + max_val) / 2
-    )
+        for col in columnas_modelo:
+            min_val, max_val = min_max_dict[col]
+            min_val, max_val = float(min_val), float(max_val)
+            inputs[col] = st.number_input(
+                f"{col} ({min_val} - {max_val})", 
+                min_value=min_val, 
+                max_value=max_val, 
+                value=(min_val + max_val) / 2
+            )
 
-if st.button("Predecir"):
-    input_df = pd.DataFrame([inputs])
-    prediccion = model.predict(input_df)
-    ocupacion = "Ocupada" if prediccion[0] == 1 else "No Ocupada"
-    st.success(f"La predicción de ocupación es: {ocupacion}")
+        if st.button("Predecir"):
+            input_df = pd.DataFrame([inputs])
+            prediccion = model.predict(input_df)
+            ocupacion = "Ocupada" if prediccion[0] == 1 else "No Ocupada"
+            st.success(f"La predicción de ocupación es: {ocupacion}")
 
-    # Importancia de las variables
-    st.markdown("### Importancia de las variables")
-    importancia = model.feature_importances_
-    imp_df = pd.DataFrame({'Variable': columnas_modelo, 'Importancia': importancia})
-    imp_df = imp_df.sort_values(by='Importancia', ascending=False)
+            # Importancia de las variables
+            st.markdown("### Importancia de las variables")
+            importancia = model.feature_importances_
+            imp_df = pd.DataFrame({'Variable': columnas_modelo, 'Importancia': importancia})
+            imp_df = imp_df.sort_values(by='Importancia', ascending=False)
 
-    plt.figure(figsize=(8, 5))
-    sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
-    st.pyplot(plt)
+            plt.figure(figsize=(8, 5))
+            sns.barplot(x='Importancia', y='Variable', data=imp_df, palette='viridis')
+            st.pyplot(plt)
+
+    else:
+        st.error("No se pudo cargar el modelo. Verifica el archivo.")
 
 st.sidebar.info("Esta aplicación predice la ocupación de una habitación usando un modelo Random Forest.")
-
